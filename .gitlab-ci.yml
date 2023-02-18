@@ -6,7 +6,7 @@ unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
   tags:
     - "runner_tag"
-  # 限制只有 master branch 會執行此 job
+  # 限制只有 master branch 會執行此 job test
   only:
     - master
   script:
