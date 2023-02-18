@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Tests\Traits\WalletTrait;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class WalletTest extends TestCase
 {
