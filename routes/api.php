@@ -11,6 +11,7 @@ use App\Http\Controllers\Apis\Wallets\Auth\WalletRegisterController;
 use App\Http\Controllers\Apis\Wallets\Auth\WalletLoginController;
 use App\Http\Controllers\Apis\Logs\LineController;
 use App\Http\Controllers\Apis\Logs\FrontLogController;
+use App\Http\Controllers\Apis\Options\OptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,10 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
         Route::name("login")->post("/login", [LoginController::class, 'login']);
         Route::name("cache")->match(['get', 'post'], "/cache", [LoginController::class, 'cache']);
         Route::name("register")->post("/register", [RegisterController::class, 'register']);
+    });
+    # 選項
+    Route::group(['as' => 'option.', 'namespace' => 'Options', 'prefix' => '/option'], function () {
+        Route::name("exchangeRate")->get("/exchangeRate", [OptionController::class, 'exchangeRate']);
     });
     # 帳本成員
     Route::group(['as' => 'wallet.', 'prefix' => '/wallet'], function () {

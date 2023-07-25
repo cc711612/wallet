@@ -33,7 +33,7 @@ class WalletDetailResource extends JsonResource
         $WalletUsers = $Wallet->wallet_users->pluck('id');
 
         $WalletDetailGroupBySymbolType = $WalletDetails
-            ->where('select_all',0)
+            ->where('select_all', 0)
             ->groupBy('symbol_operation_type_id');
 
         return [
@@ -57,6 +57,7 @@ class WalletDetailResource extends JsonResource
                         'symbol_operation_type_id' => Arr::get($Detail, 'symbol_operation_type_id'),
                         'select_all'               => Arr::get($Detail, 'select_all') ? true : false,
                         'value'                    => Arr::get($Detail, 'value', 0),
+                        'unit'                     => Arr::get($Detail, 'unit'),
                         'users'                    => $Users,
                         'checkout_by'              => Arr::get($Detail, 'checkout_by'),
                         'created_by'               => Arr::get($Detail, 'created_by'),
