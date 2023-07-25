@@ -55,7 +55,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         if ($request->is('api/*')) {
-            $this->sendMessage(sprintf("url : %s ,message : %s", $request->getUri, $e->getMessage()));
+            $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
             return response()->json([
                 'status'  => false,
                 'code'    => 500,
