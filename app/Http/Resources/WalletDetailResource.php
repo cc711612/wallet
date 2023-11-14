@@ -6,7 +6,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
-use \App\Http\Resources\WalletDetailSplitResource;
+use App\Http\Resources\WalletDetailSplitResource;
 
 class WalletDetailResource extends JsonResource
 {
@@ -32,7 +32,6 @@ class WalletDetailResource extends JsonResource
         $Wallet = $this->resource;
         $WalletDetails = $Wallet->wallet_details;
         $WalletUsers = $Wallet->wallet_users->pluck('id');
-
         $WalletDetailGroupBySymbolType = $WalletDetails
             ->where('select_all', 0)
             ->groupBy('symbol_operation_type_id');
@@ -66,6 +65,9 @@ class WalletDetailResource extends JsonResource
                         'created_at'               => Arr::get($Detail, 'created_at')->toDateTimeString(),
                         'updated_at'               => Arr::get($Detail, 'updated_at')->toDateTimeString(),
                         'checkout_at'              => Arr::get($Detail, 'checkout_at'),
+                        'wallet_detail_splits'     => WalletDetailSplitResource::collection(
+                            $Detail->wallet_detail_splits
+                        ),
                     ];
                 })->toArray(),
                 'total'   => [

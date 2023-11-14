@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Wallets\Databases\Entities\WalletDetailSplitEntity;
 
 class WalletApiService extends Service
 {
@@ -90,6 +91,7 @@ class WalletApiService extends Service
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail->with([
                         WalletUserEntity::Table,
+                        WalletDetailSplitEntity::Table
                     ]);
                 },
                 WalletUserEntity::Table,
