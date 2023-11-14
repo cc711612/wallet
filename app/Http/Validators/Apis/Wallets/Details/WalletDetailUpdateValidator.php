@@ -41,9 +41,13 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
         return [
             'wallets.id'                              => [
                 'required',
-                Rule::exists('wallets','id')->where(function ($query){
-                    return $query->where('status',1);
+                Rule::exists('wallets', 'id')->where(function ($query) {
+                    return $query->where('status', 1);
                 }),
+            ],
+            'wallet_details.id'                              => [
+                'required',
+                Rule::exists('wallet_details', 'id'),
             ],
             'wallet_users.id'                         => [
                 'required',
@@ -69,7 +73,7 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
             'wallet_details.value'                    => [
                 'required',
                 'integer',
-//                'min:1',
+                //                'min:1',
             ],
             'wallet_details.select_all'               => [
                 'required',
@@ -81,6 +85,13 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
             'wallet_details.updated_by'               => [
                 'required',
                 'integer',
+            ],
+            'wallet_detail_splits.*.id'               => [
+                'required',
+                'integer',
+                Rule::exists('wallet_detail_splits', 'id')->where(function ($query) {
+                    return $query->where('wallet_detail_id', Arr::get($this->request, 'wallet_details.id'));
+                }),
             ],
         ];
     }
@@ -111,5 +122,4 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
             'wallet_details.created_by.integer'                => '系統錯誤，請重新整理',
         ];
     }
-
 }

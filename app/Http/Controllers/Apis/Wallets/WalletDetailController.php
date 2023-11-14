@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/20 下午 03:39
@@ -105,16 +106,17 @@ class WalletDetailController extends ApiController
             return $this->response()->errorBadRequest($Validate->errors()->first());
         }
 
-        if (Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
-            Arr::get($requester,
-                'wallet_details.symbol_operation_type_id') == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
+        if (
+            Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
+            Arr::get(
+                $requester,
+                'wallet_details.symbol_operation_type_id'
+            ) == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
         ) {
             # 公費 & 減項 需檢查公費額度
-            $Details = $this->wallet_detail_api_service
-                ->getPublicDetailByWalletId(Arr::get($requester, 'wallets.id'));
-            $DetailGroupBySymbol = $Details->groupBy('symbol_operation_type_id');
-            $total = $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,collect([]))->sum('value') - $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,collect([]))->sum('value');
-            if ($total - Arr::get($requester, 'wallet_details.value') < 0) {
+            $walletBalance = $this->wallet_detail_api_service
+                ->getWalletBalance(Arr::get($requester, 'wallets.id'));
+            if ($walletBalance - Arr::get($requester,'wallet_details.value') < 0) {
                 return $this->response()->errorBadRequest("公費結算金額不得為負數");
             }
         }
@@ -155,10 +157,12 @@ class WalletDetailController extends ApiController
         if ($Validate->fails() === true) {
             return $this->response()->errorBadRequest($Validate->errors()->first());
         }
-
-        if (Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
-            Arr::get($requester,
-                'wallet_details.symbol_operation_type_id') == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
+        if (
+            Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
+            Arr::get(
+                $requester,
+                'wallet_details.symbol_operation_type_id'
+            ) == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
         ) {
             # 公費 & 減項 需檢查公費額度
             $Details = $this->wallet_detail_api_service
@@ -173,7 +177,10 @@ class WalletDetailController extends ApiController
                 }
             }
             $DetailGroupBySymbol = $Details->groupBy('symbol_operation_type_id');
-            $total = $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,collect([]))->sum('value') - $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,collect([]))->sum('value');
+            $total = $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+                    collect([]))->sum('value') - $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
+                    collect([]))->sum('value');
+            # 檢查公帳負數問題
             if ($total + $before_detail_value - Arr::get($requester, 'wallet_details.value') < 0) {
                 return $this->response()->errorBadRequest("公費結算金額不得為負數");
             }
@@ -244,8 +251,10 @@ class WalletDetailController extends ApiController
         if (is_null($Detail) === true) {
             return $this->response()->errorBadRequest("參數有誤");
         }
-        if ($Detail->created_by != Arr::get($requester, 'wallet_users.id') && Arr::get($requester,
-                'wallet_user.is_admin') != 1) {
+        if ($Detail->created_by != Arr::get($requester, 'wallet_users.id') && Arr::get(
+                $requester,
+                'wallet_user.is_admin'
+            ) != 1) {
             return $this->response()->errorUnauthorized("非admin");
         }
         try {
@@ -277,7 +286,6 @@ class WalletDetailController extends ApiController
             $this->wallet_detail_api_service
                 ->setRequest($requester->toArray())
                 ->checkoutWalletDetails();
-
         } catch (\Exception $exception) {
             return $this->response()->fail(json_encode($exception));
         }

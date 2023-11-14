@@ -33,6 +33,7 @@ class WalletDetailUpdateRequest extends Request
             'wallet_details.updated_by'               => null,
             'wallet_details.updated_at'               => Carbon::now()->toDateTimeString(),
             'wallet_detail_wallet_user'               => [],
+            'wallet_detail_splits'                    => [],
         ];
     }
 
@@ -47,8 +48,10 @@ class WalletDetailUpdateRequest extends Request
     {
         return [
             'wallets.id'                              => Arr::get($row, 'wallet'),
-            'wallet_users.id'                         => Arr::get($row,
-                sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))),
+            'wallet_users.id'                         => Arr::get(
+                $row,
+                sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))
+            ),
             'wallet_details.id'                       => Arr::get($row, 'detail'),
             'wallet_details.type'                     => Arr::get($row, 'type'),
             'wallet_details.payment_wallet_user_id'   => Arr::get($row, 'payment_wallet_user_id'),
@@ -58,9 +61,12 @@ class WalletDetailUpdateRequest extends Request
             'wallet_details.value'                    => Arr::get($row, 'value'),
             'wallet_details.unit'                     => Arr::get($row, 'unit'),
             'wallet_details.note'                     => Arr::get($row, 'note'),
-            'wallet_details.updated_by'               => Arr::get($row,
-                sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))),
+            'wallet_details.updated_by'               => Arr::get(
+                $row,
+                sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))
+            ),
             'wallet_detail_wallet_user'               => Arr::get($row, 'users'),
+            'wallet_detail_splits'                    => Arr::get($row, 'wallet_detail_splits', []),
         ];
     }
 }

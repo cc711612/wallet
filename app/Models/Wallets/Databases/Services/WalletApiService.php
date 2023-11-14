@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/20 下午 03:40
@@ -63,7 +64,7 @@ class WalletApiService extends Service
             ->select(['id', 'user_id', 'title', 'code', 'status', 'updated_at', 'created_at']);
 
         return $Result
-//            ->where('status', 1)
+            //            ->where('status', 1)
             ->orderByDesc('updated_at')
             ->paginate($page_count);
     }
@@ -189,6 +190,7 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('wallets.id'))) {
             return null;
         }
+
         return DB::transaction(function () {
             $Entity = $this->getEntity()
                 ->find($this->getRequestByKey('wallets.id'));
@@ -203,7 +205,12 @@ class WalletApiService extends Service
                 if ($this->getRequestByKey('wallet_details.select_all') == 1) {
                     $Users = $Entity->wallet_users()->get()->pluck('id')->toArray();
                 }
+                # 分帳人
                 $DetailEntity->wallet_users()->sync($Users);
+                # 自定義分帳
+                foreach ($this->getRequestByKey('wallet_detail_splits') as $walletDetailSplit) {
+                    $DetailEntity->wallet_detail_splits()->create($walletDetailSplit);
+                }
             }
             return $DetailEntity;
         });

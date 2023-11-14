@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/20 下午 03:40
@@ -7,12 +8,14 @@
 namespace App\Models\Wallets\Databases\Services;
 
 use App\Concerns\Databases\Service;
+use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
 use Illuminate\Support\Facades\DB;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Arr;
 
 class WalletDetailApiService extends Service
 {
@@ -54,6 +57,14 @@ class WalletDetailApiService extends Service
                     $Users = $Entity->wallets()->first()->wallet_users()->get()->pluck('id')->toArray();
                 }
                 $Entity->wallet_users()->sync($Users);
+                $walletDetailSplitApiService = app(WalletDetailSplitApiService::class);
+                # 自定義分帳
+                foreach ($this->getRequestByKey('wallet_detail_splits') as $walletDetailSplit) {
+                    $walletDetailSplitApiService->updateById(
+                        $walletDetailSplit['id'],
+                        Arr::except($walletDetailSplit,['id'])
+                    );
+                }
             }
             return $Entity->update($this->getRequestByKey('wallet_details'));
         });
@@ -72,6 +83,7 @@ class WalletDetailApiService extends Service
         return $this->getEntity()
             ->with([
                 'wallet_users',
+                'wallet_detail_splits',
             ])
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
             ->find($this->getRequestByKey('wallet_details.id'));
@@ -121,5 +133,21 @@ class WalletDetailApiService extends Service
             ->where('wallet_id', $wallet_id)
             ->where('type', WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE)
             ->get();
+    }
+
+    /**
+     * @param  int  $wallet_id
+     *
+     * @return float
+     * @Author: Roy
+     * @DateTime: 2023/11/14 下午 09:50
+     */
+    public function getWalletBalance(int $wallet_id): float
+    {
+        $DetailGroupBySymbol = $this->getPublicDetailByWalletId($wallet_id)->groupBy('symbol_operation_type_id');
+        return $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+                collect([]))->sum('value')
+            -
+            $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT, collect([]))->sum('value');
     }
 }

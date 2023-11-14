@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 03:19
@@ -48,9 +49,7 @@ class WalletDetailEntity extends Model
      *
      * @var array
      */
-    protected $hidden = [
-
-    ];
+    protected $hidden = [];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -69,8 +68,12 @@ class WalletDetailEntity extends Model
      */
     public function wallet_users()
     {
-        return $this->belongsToMany(WalletUserEntity::class, 'wallet_detail_wallet_user', 'wallet_detail_id',
-            'wallet_user_id');
+        return $this->belongsToMany(
+            WalletUserEntity::class,
+            'wallet_detail_wallet_user',
+            'wallet_detail_id',
+            'wallet_user_id'
+        );
     }
 
     /**
@@ -111,5 +114,15 @@ class WalletDetailEntity extends Model
     public function created_user()
     {
         return $this->belongsTo(WalletUserEntity::class, 'created_by', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @Author: Roy
+     * @DateTime: 2023/11/13 下午 08:47
+     */
+    public function wallet_detail_splits()
+    {
+        return $this->hasMany(WalletDetailSplitEntity::class, 'wallet_detail_id', 'id');
     }
 }
