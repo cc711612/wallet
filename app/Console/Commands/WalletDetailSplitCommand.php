@@ -63,7 +63,7 @@ class WalletDetailSplitCommand extends Command
     public function getWalletDetails(): Collection
     {
         return app(WalletDetailEntity::class)
-            ->where('type', 2)
+            ->where('symbol_operation_type_id', 2)
             ->with([
                 'wallet_users',
                 'wallet_detail_splits',
