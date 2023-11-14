@@ -42,6 +42,9 @@ class WalletDetailSplitCommand extends Command
         foreach ($details as $detail) {
             $total = $detail->value;
             $detailUserCount = $detail->wallet_users->count();
+            if ($detailUserCount == 0) {
+                continue;
+            }
             $avgValue = ceil($total / $detailUserCount);
             $this->deleteWalletDetailSplitByWalletDetailId($detail->id);
             foreach ($detail->wallet_users as $wallet_user) {
@@ -63,10 +66,8 @@ class WalletDetailSplitCommand extends Command
     public function getWalletDetails(): Collection
     {
         return app(WalletDetailEntity::class)
-            ->where('symbol_operation_type_id', 2)
             ->with([
                 'wallet_users',
-                'wallet_detail_splits',
             ])
             ->get();
     }
