@@ -2,13 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
-use Illuminate\Support\Arr;
-use App\Modules\PredictionRule\Entities\PredictionRule;
-use App\Modules\PredictionRule\Entities\PredictionRuleCriteria;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use App\Models\Wallets\Databases\Entities\WalletDetailSplitEntity;
+use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
 
 class WalletDetailSplitCommand extends Command
 {

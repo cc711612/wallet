@@ -25,17 +25,17 @@ class ExchangeRateService extends Service
         return app(ExchangeRateEntity::class);
     }
 
-    public function setExchangeRate(): self
+    public function setExchangeRate(): void
     {
         $result = json_decode($this->get(config('services.exchangeRate.domain')), 1);
         $exchangeRateEntity = (new ExchangeRateEntity());
         $checkDate = Arr::get($result, 'date', Carbon::now()->toDateString());
-        $check = $exchangeRateEntity
-            ->where('date', $checkDate)
-            ->count();
+//        $check = $exchangeRateEntity
+//            ->where('date', $checkDate)
+//            ->count();
         $rates = Arr::get($result, 'rates', []);
         $baseUnit = 'TWD';
-        if (count($rates) != $check) {
+//        if (count($rates) != $check) {
             foreach ($rates as $unit => $rate) {
                 $exchangeRateEntity::updateOrCreate([
                     'date'          => $checkDate,
@@ -48,7 +48,7 @@ class ExchangeRateService extends Service
                     'rate'          => $rate,
                 ]);
             }
-        }
+//        }
     }
 
     public function get($url): string
