@@ -20,6 +20,7 @@ class WalletUpdateRequest extends Request
             'wallets.id'      => null,
             'wallets.user_id' => null,
             'wallets.title'   => null,
+            'wallets.unit'    => 'TWD',
             'wallets.status'  => 1,
         ];
     }
@@ -38,6 +39,7 @@ class WalletUpdateRequest extends Request
             'wallets.id'      => Arr::get($row, 'wallet'),
             'wallets.user_id' => Arr::get($row, 'user.id'),
             'wallets.title'   => Arr::get($row, 'title'),
+            'wallets.unit'    => Arr::get($row, 'unit'),
             'wallets.status'  => Arr::get($row, 'status'),
         ];
     }
