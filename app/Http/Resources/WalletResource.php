@@ -47,6 +47,7 @@ class WalletResource extends JsonResource
                     'title'      => Arr::get($wallet, 'title'),
                     'code'       => Arr::get($wallet, 'code'),
                     'status'     => Arr::get($wallet, 'status'),
+                    'unit'       => Arr::get($wallet, 'unit'),
                     'user'       => [
                         'id'   => Arr::get($wallet, 'users.id'),
                         'name' => Arr::get($wallet, 'users.name'),
