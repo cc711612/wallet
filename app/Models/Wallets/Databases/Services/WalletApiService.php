@@ -62,7 +62,7 @@ class WalletApiService extends Service
                 },
             ])
             ->where('user_id', $this->getRequestByKey('users.id'))
-            ->select(['id', 'user_id', 'title', 'code', 'status', 'updated_at', 'created_at']);
+            ->select(['id', 'user_id', 'title', 'code', 'unit', 'status', 'updated_at', 'created_at']);
 
         return $Result
             //            ->where('status', 1)
@@ -91,7 +91,7 @@ class WalletApiService extends Service
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail->with([
                         WalletUserEntity::Table,
-                        WalletDetailSplitEntity::Table
+                        WalletDetailSplitEntity::Table,
                     ]);
                 },
                 WalletUserEntity::Table,
