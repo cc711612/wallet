@@ -34,4 +34,13 @@ return [
         'domain' => env('EXCHANGERATE_URI'),
     ],
 
+    'line'     => [
+        'client_id'     => env('LINE_KEY'),
+        'client_secret' => env('LINE_SECRET'),
+        'redirect'      => sprintf("%s%s", config('app.url'), env('LINE_REDIRECT_URI')),
+    ],
+
+    'easysplit' => [
+        'domain'     => env('EASYSPLIT_DOMAIN', 'https://easysplit.usongrat.tw/'),
+    ],
 ];

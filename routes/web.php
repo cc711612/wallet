@@ -18,4 +18,10 @@ Route::get('/', function () {
 });
 Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
     Route::name("login")->get("/login", [LoginController::class, 'login']);
+    Route::group(['as' => 'thirdParty', 'prefix' => 'thirdParty'], function () {
+        Route::group(['as' => 'line.', 'prefix' => 'line'], function () {
+            Route::name("login")->get("/login", [LoginController::class, 'lineLogin']);
+            Route::name("return")->get("/return", [LoginController::class, 'lineReturn']);
+        });
+    });
 });
