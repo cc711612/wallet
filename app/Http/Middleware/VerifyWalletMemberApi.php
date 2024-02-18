@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use App\Models\Users\Databases\Entities\UserEntity;
+use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use Illuminate\Support\Facades\Cache;
-use App\Traits\AuthLoginTrait;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 
 class VerifyWalletMemberApi
@@ -26,6 +26,36 @@ class VerifyWalletMemberApi
      */
     public function handle($request, \Closure $next, $guard = null)
     {
+
+        // jwt
+        if ($request->bearerToken()) {
+            $tokenPayload = JWT::decode($request->bearerToken(), new Key(config('app.name'), 'HS256'));
+            // toArray
+            $tokenPayload = $tokenPayload ? json_decode(json_encode($tokenPayload), 1) : [];
+            // 管理者
+            if (!empty($tokenPayload['user']['id'])) {
+                $userId = Crypt::decryptString($tokenPayload['user']['id']);
+                $user = UserEntity::with(['wallet_users'])->find($userId);
+                if ($user && $user->wallet_users) {
+                    $request->merge([
+                        'wallet_user' => $user->wallet_users->keyBy('wallet_id'),
+                    ]);
+                    return $next($request);
+                }
+            }
+            // 帳簿使用者
+            if (!empty($tokenPayload['wallet_user']['id'])) {
+                $userId = Crypt::decryptString($tokenPayload['wallet_user']['id']);
+                $user = WalletUserEntity::where('id', $userId)->get();
+                if ($user) {
+                    $request->merge([
+                        'wallet_user' => $user->keyBy('wallet_id'),
+                    ]);
+                    return $next($request);
+                }
+            }
+        }
+
         $member_token = $request->member_token;
 
         if ($member_token == null) {
@@ -48,7 +78,6 @@ class VerifyWalletMemberApi
         }
         # 取得快取資料
         $LoginCache = Cache::get($this->getCacheKey($member_token));
-
         # 若有新增請記得至 ResponseApiServiceProvider 排除
         $request->merge([
             'wallet_user' => $LoginCache,

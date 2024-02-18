@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use App\Models\Users\Databases\Entities\UserEntity;
 use Illuminate\Support\Facades\Cache;
 use App\Traits\AuthLoginTrait;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Carbon;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Crypt;
 
 class VerifyApi
 {
@@ -25,8 +25,25 @@ class VerifyApi
      */
     public function handle($request, \Closure $next, $guard = null)
     {
-        $member_token = $request->member_token;
+        // jwt
+        if ($request->bearerToken()) {
+            $tokenPayload = JWT::decode($request->bearerToken(), new Key(config('app.name'), 'HS256'));
+            // toArray
+            $tokenPayload = $tokenPayload ? json_decode(json_encode($tokenPayload), 1) : [];
+            if (!empty($tokenPayload['user']['id'])) {
+                $userId = Crypt::decryptString($tokenPayload['user']['id']);
+                $user = UserEntity::find($userId);
+                if ($user) {
+                    $request->merge([
+                        'user' => $user,
+                    ]);
+                    return $next($request);
+                }
+            }
+        }
 
+        // token
+        $member_token = $request->member_token;
         if ($member_token == null) {
             return response()->json([
                 'status'  => false,

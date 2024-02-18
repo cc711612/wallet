@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 02:53
@@ -10,13 +11,14 @@ use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requesters\Apis\Wallets\Auth\LoginRequest;
 use App\Http\Validators\Apis\Wallets\Auth\LoginValidator;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Arr;
 use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use App\Models\Wallets\Databases\Services\WalletApiService;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use App\Http\Requesters\Apis\Wallets\Auth\LoginTokenRequest;
 use App\Http\Validators\Apis\Wallets\Auth\LoginTokenValidator;
+use Firebase\JWT\JWT;
 
 /**
  * Class WalletLoginController
@@ -83,6 +85,20 @@ class WalletLoginController extends Controller
         }
         # set cache
         $this->setMemberTokenCache($UserEntity);
+        $key = config('app.name');
+        $payload = [
+            'iss' => config('app.url'),
+            'aud' => 'https://easysplit.usongrat.tw',
+            'iat' => now()->timestamp,
+            'exp' => now()->addMonth()->timestamp,
+            'nbf' => now()->timestamp,
+            'wallet_user' => [
+                'id' => Crypt::encryptString($UserEntity->id),
+                'name' => $UserEntity->name,
+                'created_at' => $UserEntity->created_at,
+                'updated_at' => $UserEntity->updated_at,
+            ]
+        ];
 
         return response()->json([
             'status'  => true,
@@ -93,6 +109,7 @@ class WalletLoginController extends Controller
                 'name'         => Arr::get($UserEntity, 'name'),
                 'wallet_id'    => Arr::get($UserEntity, 'wallet_id'),
                 'member_token' => Arr::get($UserEntity, 'token'),
+                'jwt'          => JWT::encode($payload, $key, 'HS256'),
                 'wallet'       => [
                     'id'   => Arr::get($Wallet, 'id'),
                     'code' => Arr::get($Wallet, 'code'),
