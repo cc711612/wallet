@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 02:53
@@ -13,6 +14,7 @@ use App\Http\Validators\Apis\Auth\LoginValidator;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ApiController;
 use App\Http\Resources\AuthResource;
+use Cache;
 
 /**
  * Class LoginController
@@ -50,6 +52,23 @@ class LoginController extends ApiController
         # set cache
         $this->MemberTokenCache();
 
+        return $this->response()->success(
+            (new AuthResource(Auth::user()))
+                ->login()
+        );
+    }
+
+
+    public function thirdPartyLogin(Request $request)
+    {
+        $prefix = sprintf('auth.thirdParty.%s.%s', $request->input('provider'), $request->input('token'));
+        $socialEntity = Cache::get($prefix);
+        if (!$socialEntity || !$socialEntity->users()->first()) {
+            return $this->response()->errorBadRequest('登入失敗');
+        }
+        Auth::login($socialEntity->users()->first());
+        # set cache
+        $this->MemberTokenCache();
         return $this->response()->success(
             (new AuthResource(Auth::user()))
                 ->login()
