@@ -23,12 +23,19 @@ use App\Http\Controllers\Apis\Options\OptionController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
 Route::group(['middleware' => [], 'as' => 'api.',], function () {
     # 登入相關
     Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
+        Route::name('thirdParty.line')->post('/thirdParty/line', function () {
+            return redirect('https://ezionic.usongrat.tw/auth/thirdParty/return?provider=line&token=123123');
+        });
         Route::name("login")->post("/login", [LoginController::class, 'login']);
         Route::name("cache")->match(['get', 'post'], "/cache", [LoginController::class, 'cache']);
         Route::name("register")->post("/register", [RegisterController::class, 'register']);
+        Route::group(['as' => 'thirdParty', 'prefix' => 'thirdParty'], function () {
+            Route::name('login')->post('/login', [LoginController::class, 'thirdPartyLogin']);
+        });
     });
     # 選項
     Route::group(['as' => 'option.', 'namespace' => 'Options', 'prefix' => '/option'], function () {
@@ -90,7 +97,6 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
             });
         });
     });
-
 });
 Route::fallback(function () {
     return response([

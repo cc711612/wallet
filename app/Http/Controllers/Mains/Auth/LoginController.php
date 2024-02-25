@@ -7,9 +7,12 @@
 
 namespace App\Http\Controllers\Mains\Auth;
 
+use App\Models\Socials\Databases\Services\SocialService;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 
@@ -42,10 +45,18 @@ class LoginController extends Controller
 
     public function lineReturn(Request $request)
     {
+        $token = Str::random(10);
+        $prefix = 'auth.thirdParty.line.' . $token;
         $userInfo = Socialite::driver('line')->user();
         $userInfo = json_decode(json_encode($userInfo), 1);
-        $userInfo = Arr::only($userInfo, ['id', 'name', 'email', 'avatar']);
-        $url = config('services.easysplit.domain') . 'auth/thirdParty/return?' . http_build_query($userInfo);
+
+        $socialEntity = app(SocialService::class)->registerLine($userInfo);
+        Cache::put($prefix, $socialEntity, 300);
+        $queries = [
+            'token' => $token,
+            'provider' => 'line'
+        ];
+        $url = config('services.easysplit.domain') . 'auth/thirdParty/return?' . http_build_query($queries);
         return redirect($url);
     }
 }
