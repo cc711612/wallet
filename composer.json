@@ -11,10 +11,12 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
+        "laravel/socialite": "^5.12",
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.5",
         "linecorp/line-bot-sdk": "^7.6",
-        "predis/predis": "^2.0"
+        "predis/predis": "^2.0",
+        "socialiteproviders/line": "^4.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.12",
