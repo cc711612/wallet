@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Users\Databases\Entities\UserEntity;
+use App\Models\Users\Databases\Services\UserApiService;
 use Illuminate\Support\Facades\Cache;
 use App\Traits\AuthLoginTrait;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +32,7 @@ class VerifyApi
             $tokenPayload = $tokenPayload ? json_decode(json_encode($tokenPayload), 1) : [];
             if (!empty($tokenPayload['user']['id'])) {
                 $userId = Crypt::decryptString($tokenPayload['user']['id']);
-                $user = UserEntity::find($userId);
+                $user = app(UserApiService::class)->find($userId);
                 if ($user) {
                     $request->merge([
                         'user' => $user,
