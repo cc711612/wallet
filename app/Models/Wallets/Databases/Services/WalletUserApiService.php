@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class WalletUserApiService extends Service
 {
@@ -136,8 +137,16 @@ class WalletUserApiService extends Service
 
     public function getWalletUserByWalletUserId($userId): Collection
     {
-        return $this->getEntity()
+        $cacheKey = 'wallet_user_' . $userId;
+        if (Cache::get($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $walletUsers = $this->getEntity()
             ->where('id', $userId)
             ->get();
+        if ($walletUsers->isNotEmpty()) {
+            Cache::put($cacheKey, $walletUsers, 3600);
+        }
+        return $walletUsers;
     }
 }
