@@ -54,4 +54,10 @@ class UserApiService extends Service
 
         return $user;
     }
+
+    public function forgetFindCache($id)
+    {
+        $cacheKey = 'user.' . $id;
+        Cache::forget($cacheKey);
+    }
 }

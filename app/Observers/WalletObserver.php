@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Users\Databases\Services\UserApiService;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Wallets\Databases\Services\WalletApiService;
 
@@ -36,7 +37,7 @@ class WalletObserver
      */
     public function created(WalletEntity $WalletEntity)
     {
-
+        app(UserApiService::class)->forgetFindCache($WalletEntity->user_id);
     }
 
     /**
