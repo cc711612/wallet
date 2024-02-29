@@ -8,6 +8,7 @@ use App\Traits\LineMessageTrait;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Auth\Access\AuthorizationException;
 use UnexpectedValueException;
+use DomainException;
 
 class Handler extends ExceptionHandler
 {
@@ -63,6 +64,7 @@ class Handler extends ExceptionHandler
                 $e instanceof \Firebase\JWT\ExpiredException ||
                 $e instanceof \Firebase\JWT\BeforeValidException ||
                 $e instanceof UnexpectedValueException ||
+                $e instanceof DomainException ||
                 $e instanceof AuthorizationException
             ) {
                 return response()->json([
