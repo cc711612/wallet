@@ -5,7 +5,9 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use App\Traits\LineMessageTrait;
-use Illuminate\Http\Request;
+use Firebase\JWT\SignatureInvalidException;
+use Illuminate\Auth\Access\AuthorizationException;
+use UnexpectedValueException;
 
 class Handler extends ExceptionHandler
 {
@@ -55,7 +57,23 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         if ($request->is('api/*')) {
+
+            if (
+                $e instanceof SignatureInvalidException ||
+                $e instanceof \Firebase\JWT\ExpiredException ||
+                $e instanceof \Firebase\JWT\BeforeValidException ||
+                $e instanceof UnexpectedValueException ||
+                $e instanceof AuthorizationException
+            ) {
+                return response()->json([
+                    'status'  => false,
+                    'code'    => 401,
+                    'message' => '認證錯誤',
+                ], 401);
+            }
+
             $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
+
             return response()->json([
                 'status'  => false,
                 'code'    => 500,
@@ -66,5 +84,4 @@ class Handler extends ExceptionHandler
 
         return parent::render($request, $e);
     }
-
 }

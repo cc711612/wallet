@@ -47,19 +47,19 @@ class VerifyApi
         if ($member_token == null) {
             return response()->json([
                 'status'  => false,
-                'code'    => 400,
+                'code'    => 401,
                 'message' => '請帶入 member_token',
                 'data'    => [],
-            ]);
+            ], 401);
         }
 
         if ($this->checkToken($member_token) === false) {
-            return response()->json($this->get_error_response($member_token));
+            return response()->json($this->get_error_response($member_token), 401);
         }
         # 取得快取資料
         $LoginCache = Cache::get($this->getCacheKey($member_token));
         if (is_null($LoginCache) === true) {
-            return response()->json($this->get_error_response($member_token));
+            return response()->json($this->get_error_response($member_token), 401);
         }
         # 若有新增請記得至 ResponseApiServiceProvider 排除
         $request->merge([
