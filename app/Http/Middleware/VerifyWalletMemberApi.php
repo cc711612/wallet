@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Users\Databases\Entities\UserEntity;
-use App\Models\Wallets\Databases\Entities\WalletUserEntity;
+use App\Models\Users\Databases\Services\UserApiService;
+use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
@@ -35,7 +35,7 @@ class VerifyWalletMemberApi
             // 管理者
             if (!empty($tokenPayload['user']['id'])) {
                 $userId = Crypt::decryptString($tokenPayload['user']['id']);
-                $user = UserEntity::with(['wallet_users'])->find($userId);
+                $user = app(UserApiService::class)->find($userId);
                 if ($user && $user->wallet_users) {
                     $request->merge([
                         'wallet_user' => $user->wallet_users->keyBy('wallet_id'),
@@ -46,7 +46,7 @@ class VerifyWalletMemberApi
             // 帳簿使用者
             if (!empty($tokenPayload['wallet_user']['id'])) {
                 $userId = Crypt::decryptString($tokenPayload['wallet_user']['id']);
-                $user = WalletUserEntity::where('id', $userId)->get();
+                $user = app(WalletUserApiService::class)->getWalletUserByWalletUserId($userId);
                 if ($user) {
                     $request->merge([
                         'wallet_user' => $user->keyBy('wallet_id'),

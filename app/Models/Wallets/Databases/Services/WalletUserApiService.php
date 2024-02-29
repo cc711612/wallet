@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/21 下午 02:42
@@ -13,6 +14,7 @@ use App\Models\Wallets\Databases\Entities\WalletEntity;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class WalletUserApiService extends Service
 {
@@ -45,9 +47,9 @@ class WalletUserApiService extends Service
         }
 
         return $this->getEntity()
-                ->where('wallet_id', $this->getRequestByKey('wallets.id'))
-                ->whereIn('id', $this->getRequestByKey('wallet_detail_wallet_user'))
-                ->count() == count($this->getRequestByKey('wallet_detail_wallet_user'));
+            ->where('wallet_id', $this->getRequestByKey('wallets.id'))
+            ->whereIn('id', $this->getRequestByKey('wallet_detail_wallet_user'))
+            ->count() == count($this->getRequestByKey('wallet_detail_wallet_user'));
     }
 
     /**
@@ -129,6 +131,13 @@ class WalletUserApiService extends Service
     {
         return $this->getEntity()
             ->where('wallet_id', $wallet_id)
+            ->get();
+    }
+
+    public function getWalletUserByWalletUserId($userId): Collection
+    {
+        return $this->getEntity()
+            ->where('id', $userId)
             ->get();
     }
 }
