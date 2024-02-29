@@ -61,20 +61,20 @@ class VerifyWalletMemberApi
         if ($member_token == null) {
             return response()->json([
                 'status'  => false,
-                'code'    => 400,
+                'code'    => 401,
                 'message' => '請帶入 member_token',
                 'data'    => [],
-            ]);
+            ], 401);
         }
 
         if ($this->checkToken($member_token) === false) {
             Log::channel('token')->info(sprintf("Verify token is empty info : %s ", $request->member_token));
             return response()->json([
                 'status'  => false,
-                'code'    => 403,
+                'code'    => 401,
                 'message' => "請重新登入",
                 'data'    => [],
-            ]);
+            ], 401);
         }
         # 取得快取資料
         $LoginCache = Cache::get($this->getCacheKey($member_token));
