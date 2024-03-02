@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use App\Models\Wallets\Databases\Services\WalletApiService;
+use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use Illuminate\Support\Carbon;
 
 /**
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
  */
 class WalletUserObserver
 {
+    use WalletUserAuthLoginTrait;
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
@@ -41,7 +43,6 @@ class WalletUserObserver
             $WalletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
-
     }
 
     /**
@@ -74,6 +75,7 @@ class WalletUserObserver
             $WalletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
+        $this->cleanToken($WalletUserEntity->token);
     }
 
     /**
