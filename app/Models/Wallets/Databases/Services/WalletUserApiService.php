@@ -13,13 +13,14 @@ use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Caches\CacheTrait;
+use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class WalletUserApiService extends Service
 {
-    use CacheTrait;
+    use CacheTrait, WalletUserAuthLoginTrait;
 
     /**
      * @return \Illuminate\Database\Eloquent\Model
@@ -86,7 +87,7 @@ class WalletUserApiService extends Service
     }
 
     /**
-     * @return void|null
+     * @return WalletUserEntity|null
      * @Author: Roy
      * @DateTime: 2022/7/4 下午 06:23
      */
@@ -148,5 +149,13 @@ class WalletUserApiService extends Service
             Cache::put($cacheKey, $walletUsers, 3600);
         }
         return $walletUsers;
+    }
+
+    public function forgetCacheByWalletUser(WalletUserEntity $walletUserEntity)
+    {
+        if (Cache::has('wallet_user_' . $walletUserEntity->id)) {
+            Cache::forget('wallet_user_' . $walletUserEntity->id);
+        }
+        $this->cleanToken($walletUserEntity->token);
     }
 }
