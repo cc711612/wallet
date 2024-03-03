@@ -47,7 +47,7 @@ class VerifyWalletMemberApi
             if (!empty($tokenPayload['wallet_user']['id'])) {
                 $userId = Crypt::decryptString($tokenPayload['wallet_user']['id']);
                 $user = app(WalletUserApiService::class)->getWalletUserByWalletUserId($userId);
-                if ($user) {
+                if ($user->isNotEmpty()) {
                     $request->merge([
                         'wallet_user' => $user->keyBy('wallet_id'),
                     ]);

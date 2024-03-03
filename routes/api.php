@@ -73,6 +73,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
         });
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
             Route::name("index")->post("/list", [WalletController::class, 'index']);
+            Route::name("get")->get("/", [WalletController::class, 'index']);
         });
         # 帳本
         Route::resource('wallet', WalletController::class)->only(['store', 'update', 'destroy']);
@@ -84,6 +85,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
             Route::group(['prefix' => '{wallet}'], function () {
                 Route::group(['prefix' => 'detail', 'as' => 'detail.'], function () {
                     Route::name("index")->post("/list", [WalletDetailController::class, 'index']);
+                    Route::name("get")->get("/", [WalletDetailController::class, 'index']);
                     Route::name("show")->post("/{detail}", [WalletDetailController::class, 'show']);
                     Route::name("checkout")->put("/checkout", [WalletDetailController::class, 'checkout']);
                     Route::name("uncheckout")->put("/undo_checkout", [WalletDetailController::class, 'uncheckout']);
