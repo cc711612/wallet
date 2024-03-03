@@ -193,6 +193,7 @@ class OptionController extends ApiController
             );
         }
         $exchangeRate = json_decode($this->get(config('services.exchangeRate.domain') . $unit), 1);
+        Cache::put($cacheKey, $exchangeRate, now()->addHours(1));
         return $this->response()->success(
             (new OptionResource($exchangeRate))
                 ->exchangeRate()
