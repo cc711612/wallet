@@ -43,7 +43,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
     });
     # 帳本成員
     Route::group(['as' => 'wallet.', 'prefix' => '/wallet'], function () {
-        Route::name("user")->post("/user", [WalletUserController::class, 'index']);
+        Route::name("user")->match(['get', 'post'], "/user", [WalletUserController::class, 'index']);
         # 登入
         Route::group(['as' => 'auth.', 'prefix' => '/auth'], function () {
             Route::name("login")->post("/login", [WalletLoginController::class, 'login']);
@@ -86,7 +86,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
                 Route::group(['prefix' => 'detail', 'as' => 'detail.'], function () {
                     Route::name("index")->post("/list", [WalletDetailController::class, 'index']);
                     Route::name("get")->get("/", [WalletDetailController::class, 'index']);
-                    Route::name("show")->post("/{detail}", [WalletDetailController::class, 'show']);
+                    Route::name("show")->match(['get', 'post'], "/{detail}", [WalletDetailController::class, 'show']);
                     Route::name("checkout")->put("/checkout", [WalletDetailController::class, 'checkout']);
                     Route::name("uncheckout")->put("/undo_checkout", [WalletDetailController::class, 'uncheckout']);
                 });
