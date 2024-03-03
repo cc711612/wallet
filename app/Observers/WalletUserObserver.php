@@ -55,7 +55,9 @@ class WalletUserObserver
      */
     public function updated(WalletUserEntity $WalletUserEntity)
     {
-        //
+        if ($WalletUserEntity->deleted_at) {
+            app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
+        }
         return $this->wallet_api_service->update(
             $WalletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
