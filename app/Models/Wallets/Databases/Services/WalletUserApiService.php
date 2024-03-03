@@ -17,6 +17,7 @@ use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class WalletUserApiService extends Service
 {
@@ -154,6 +155,10 @@ class WalletUserApiService extends Service
     public function forgetCacheByWalletUser(WalletUserEntity $walletUserEntity)
     {
         if (Cache::has('wallet_user_' . $walletUserEntity->id)) {
+            Log::channel('token')->info(sprintf("forgetCacheByWalletUser : %s ", json_encode([
+                'cache_key' => 'wallet_user_' . $walletUserEntity->id,
+                'token'     => $walletUserEntity->token,
+            ])));
             Cache::forget('wallet_user_' . $walletUserEntity->id);
         }
         $this->cleanToken($walletUserEntity->token);
