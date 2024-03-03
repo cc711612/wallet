@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2023/7/25 下午 11:44
@@ -27,28 +28,28 @@ class ExchangeRateService extends Service
 
     public function setExchangeRate(): void
     {
-        $result = json_decode($this->get(config('services.exchangeRate.domain')), 1);
+        $result = json_decode($this->get(config('services.exchangeRate.domain') . 'TWD'), 1);
         $exchangeRateEntity = (new ExchangeRateEntity());
         $checkDate = Arr::get($result, 'date', Carbon::now()->toDateString());
-//        $check = $exchangeRateEntity
-//            ->where('date', $checkDate)
-//            ->count();
+        //        $check = $exchangeRateEntity
+        //            ->where('date', $checkDate)
+        //            ->count();
         $rates = Arr::get($result, 'rates', []);
         $baseUnit = 'TWD';
-//        if (count($rates) != $check) {
-            foreach ($rates as $unit => $rate) {
-                $exchangeRateEntity::updateOrCreate([
-                    'date'          => $checkDate,
-                    'from_currency' => $baseUnit,
-                    'to_currency'   => $unit,
-                ], [
-                    'date'          => $checkDate,
-                    'from_currency' => $baseUnit,
-                    'to_currency'   => $unit,
-                    'rate'          => $rate,
-                ]);
-            }
-//        }
+        //        if (count($rates) != $check) {
+        foreach ($rates as $unit => $rate) {
+            $exchangeRateEntity::updateOrCreate([
+                'date'          => $checkDate,
+                'from_currency' => $baseUnit,
+                'to_currency'   => $unit,
+            ], [
+                'date'          => $checkDate,
+                'from_currency' => $baseUnit,
+                'to_currency'   => $unit,
+                'rate'          => $rate,
+            ]);
+        }
+        //        }
     }
 
     public function get($url): string
