@@ -30,6 +30,7 @@ class WalletDetailEntity extends Model
         'type',
         'payment_wallet_user_id',
         'title',
+        'unit',
         'symbol_operation_type_id',
         'value',
         'note',

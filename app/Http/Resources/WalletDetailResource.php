@@ -41,12 +41,19 @@ class WalletDetailResource extends JsonResource
                 'id'      => Arr::get($Wallet, 'id'),
                 'code'    => Arr::get($Wallet, 'code'),
                 'title'   => Arr::get($Wallet, 'title'),
+                'status'   => Arr::get($Wallet, 'status'),
+                'created_at'   => Arr::get($Wallet, 'created_at'),
+                'updated_at'   => Arr::get($Wallet, 'updated_at'),
                 'details' => $WalletDetails->map(function ($Detail) use ($WalletUsers) {
                     $Users = $Detail->wallet_users->pluck('id')->toArray();
                     # 公帳
-                    if (Arr::get($Detail,
-                            'type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE && is_null(Arr::get($Detail,
-                            'payment_wallet_user_id')) == true) {
+                    if (Arr::get(
+                        $Detail,
+                        'type'
+                    ) == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE && is_null(Arr::get(
+                        $Detail,
+                        'payment_wallet_user_id'
+                    )) == true) {
                         $Users = $WalletUsers;
                     }
                     return [
@@ -70,11 +77,16 @@ class WalletDetailResource extends JsonResource
                         ),
                     ];
                 })->toArray(),
+                'users'   => Arr::get($Wallet, 'wallet_users', []),
                 'total'   => [
-                    'income'   => $WalletDetailGroupBySymbolType->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
-                        collect([]))->sum('value'),
-                    'expenses' => $WalletDetailGroupBySymbolType->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
-                        collect([]))->sum('value'),
+                    'income'   => $WalletDetailGroupBySymbolType->get(
+                        SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+                        collect([])
+                    )->sum('value'),
+                    'expenses' => $WalletDetailGroupBySymbolType->get(
+                        SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
+                        collect([])
+                    )->sum('value'),
                 ],
             ],
         ];
@@ -107,8 +119,11 @@ class WalletDetailResource extends JsonResource
                     'updated_by'               => Arr::get($Detail, 'updated_by'),
                     'updated_at'               => Arr::get($Detail, 'updated_at')->toDateTimeString(),
                     'checkout_at'              => Arr::get($Detail, 'checkout_at'),
-                    'users'                    => Arr::get($Detail, 'wallet_users',
-                        collect([]))->pluck('id')->toArray(),
+                    'users'                    => Arr::get(
+                        $Detail,
+                        'wallet_users',
+                        collect([])
+                    )->pluck('id')->toArray(),
                     'wallet_detail_splits'     => WalletDetailSplitResource::collection(
                         $this->resource->wallet_detail_splits
                     ),
