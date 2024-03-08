@@ -42,6 +42,7 @@ class WalletDetailResource extends JsonResource
                 'code'    => Arr::get($Wallet, 'code'),
                 'title'   => Arr::get($Wallet, 'title'),
                 'status'   => Arr::get($Wallet, 'status'),
+                'properties'   => Arr::get($Wallet, 'properties'),
                 'created_at'   => Arr::get($Wallet, 'created_at'),
                 'updated_at'   => Arr::get($Wallet, 'updated_at'),
                 'details' => $WalletDetails->map(function ($Detail) use ($WalletUsers) {
