@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/20 下午 03:39
@@ -49,7 +50,6 @@ class WalletController extends ApiController
         $Wallets = $this->wallet_api_service
             ->setRequest($requester->toArray())
             ->paginate();
-
         return $this->response()->success(
             (new WalletResource($Wallets))
                 ->index()
@@ -75,7 +75,7 @@ class WalletController extends ApiController
             $Wallet = $this->wallet_api_service
                 ->setRequest($requester->toArray())
                 ->createWalletWithUser();
-        } catch (\Exception$exception) {
+        } catch (\Exception $exception) {
             return $this->response()->fail(json_encode($exception));
         }
         return $this->response()->success(
@@ -94,7 +94,6 @@ class WalletController extends ApiController
     public function update(Request $request)
     {
         $requester = (new WalletUpdateRequest($request));
-
         $Validate = (new WalletUpdateValidator($requester))->validate();
         if ($Validate->fails() === true) {
             return $this->response()->errorBadRequest($Validate->errors()->first());
@@ -104,7 +103,6 @@ class WalletController extends ApiController
 
             $this->wallet_api_service
                 ->update(Arr::get($requester, 'wallets.id'), Arr::get($requester, 'wallets'));
-
         } catch (\Exception $exception) {
             return $this->response()->fail(json_encode($exception));
         }

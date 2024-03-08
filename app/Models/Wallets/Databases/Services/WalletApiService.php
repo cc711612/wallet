@@ -62,7 +62,7 @@ class WalletApiService extends Service
                 },
             ])
             ->where('user_id', $this->getRequestByKey('users.id'))
-            ->select(['id', 'user_id', 'title', 'code', 'unit', 'status', 'updated_at', 'created_at']);
+            ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
 
         return $Result
             //            ->where('status', 1)

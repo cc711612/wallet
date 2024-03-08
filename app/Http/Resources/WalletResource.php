@@ -48,6 +48,7 @@ class WalletResource extends JsonResource
                     'code'       => Arr::get($wallet, 'code'),
                     'status'     => Arr::get($wallet, 'status'),
                     'unit'       => Arr::get($wallet, 'unit'),
+                    'properties' => Arr::get($wallet, 'properties'),
                     'user'       => [
                         'id'   => Arr::get($wallet, 'users.id'),
                         'name' => Arr::get($wallet, 'users.name'),
@@ -93,8 +94,10 @@ class WalletResource extends JsonResource
         $General = $WalletDetailGroupByType->get(WalletDetailTypes::WALLET_DETAIL_TYPE_GENERAL_EXPENSE, collect([]));
         # 帳本成員
         $WalletUsers = $Wallet->wallet_users;
-        $ExpenseDetails = $General->groupBy('symbol_operation_type_id')->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
-            collect([]))->toArray();
+        $ExpenseDetails = $General->groupBy('symbol_operation_type_id')->get(
+            SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
+            collect([])
+        )->toArray();
         $UserExpenseDetails = [];
         $WalletDetails = [];
         $UserPayments = [];
@@ -111,7 +114,7 @@ class WalletResource extends JsonResource
             ];
             # 代墊費
             if (is_null(Arr::get($Detail, 'payment_wallet_user_id')) === false) {
-                $UserPayments[Arr::get($Detail, 'payment_wallet_user_id')] [] = [
+                $UserPayments[Arr::get($Detail, 'payment_wallet_user_id')][] = [
                     'user_id'   => Arr::get($Detail, 'payment_wallet_user_id'),
                     'detail_id' => Arr::get($Detail, 'id'),
                     'value'     => Arr::get($Detail, 'value'),
@@ -122,7 +125,7 @@ class WalletResource extends JsonResource
                 # 均價
                 $average_expense_value = ceil(Arr::get($Detail, 'value', 0) / count($Users));
                 foreach ($Users as $User) {
-                    $UserExpenseDetails[$User['id']] [] = [
+                    $UserExpenseDetails[$User['id']][] = [
                         'user_id'   => Arr::get($User, 'id'),
                         'detail_id' => Arr::get($Detail, 'id'),
                         'value'     => $average_expense_value,
@@ -137,15 +140,23 @@ class WalletResource extends JsonResource
                 'id'      => Arr::get($Wallet, 'id'),
                 'total'   => [
                     'public'   => [
-                        'income'   => $Public->groupBy('symbol_operation_type_id')->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
-                            collect([]))->sum('value'),
-                        'expenses' => $Public->groupBy('symbol_operation_type_id')->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
-                            collect([]))->sum('value'),
+                        'income'   => $Public->groupBy('symbol_operation_type_id')->get(
+                            SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+                            collect([])
+                        )->sum('value'),
+                        'expenses' => $Public->groupBy('symbol_operation_type_id')->get(
+                            SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
+                            collect([])
+                        )->sum('value'),
                     ],
-                    'income'   => $WalletDetailGroupBySymbolOperationType->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
-                        collect([]))->sum('value'),
-                    'expenses' => $WalletDetailGroupBySymbolOperationType->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
-                        collect([]))->sum('value'),
+                    'income'   => $WalletDetailGroupBySymbolOperationType->get(
+                        SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+                        collect([])
+                    )->sum('value'),
+                    'expenses' => $WalletDetailGroupBySymbolOperationType->get(
+                        SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
+                        collect([])
+                    )->sum('value'),
                 ],
                 'users'   => $WalletUsers->map(function ($userEntity) use ($UserExpenseDetails, $UserPayments) {
                     $UserExpenseDetail = collect(Arr::get($UserExpenseDetails, $userEntity->id, []));
