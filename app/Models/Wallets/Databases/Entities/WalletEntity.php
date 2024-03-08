@@ -89,6 +89,11 @@ class WalletEntity extends Model
             $properties['unitConfigurable'] = false;
         }
 
+        // 設定預設值
+        if (!isset($properties['decimalPlaces'])) {
+            $properties['decimalPlaces'] = 0;
+        }
+
         return $properties;
     }
 }

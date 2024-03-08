@@ -21,6 +21,7 @@ class WalletUpdateRequest extends Request
             'wallets.user_id' => null,
             'wallets.title'   => null,
             'wallets.properties.unitConfigurable' => false,
+            'wallets.properties.decimalPlaces' => false,
             'wallets.unit'    => 'TWD',
             'wallets.status'  => 1,
         ];
@@ -42,6 +43,7 @@ class WalletUpdateRequest extends Request
             'wallets.title'   => Arr::get($row, 'title'),
             'wallets.unit'    => Arr::get($row, 'unit'),
             'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
+            'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),
             'wallets.status'  => Arr::get($row, 'status'),
         ];
     }
