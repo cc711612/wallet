@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 03:17
@@ -29,10 +30,15 @@ class WalletEntity extends Model
         'title',
         'unit',
         'code',
+        'properties',
         'status',
         'created_at',
         'updated_at',
         'deleted_at',
+    ];
+
+    protected $cast = [
+        'properties' => 'json'
     ];
 
     /**
@@ -40,9 +46,7 @@ class WalletEntity extends Model
      *
      * @var array
      */
-    protected $hidden = [
-
-    ];
+    protected $hidden = [];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -72,5 +76,19 @@ class WalletEntity extends Model
     public function users()
     {
         return $this->belongsTo(UserEntity::class, 'user_id', 'id');
+    }
+
+    public function getPropertiesAttribute($value)
+    {
+        $properties = [];
+        if ($value) {
+            $properties = json_decode($value, true);
+        }
+        // 設定預設值
+        if (!isset($properties['unitConfigurable'])) {
+            $properties['unitConfigurable'] = false;
+        }
+
+        return $properties;
     }
 }
