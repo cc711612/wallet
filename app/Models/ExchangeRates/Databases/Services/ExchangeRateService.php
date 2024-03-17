@@ -30,21 +30,20 @@ class ExchangeRateService extends Service
     public function setExchangeRate(): void
     {
         $units = ['TWD', 'USD'];
-        foreach ($units as $unit) {
-            $result = json_decode($this->get(config('services.exchangeRate.domain') . 'TWD'), 1);
+        foreach ($units as $baseUnit) {
+            $result = json_decode($this->get(config('services.exchangeRate.domain') . $baseUnit), 1);
             $exchangeRateEntity = (new ExchangeRateEntity());
             $checkDate = Arr::get($result, 'date', Carbon::now()->toDateString());
             $rates = Arr::get($result, 'rates', []);
-            $unit = 'TWD';
             foreach ($rates as $unit => $rate) {
                 $exchangeRateEntity::updateOrCreate([
                     'date'          => $checkDate,
-                    'from_currency' => $unit,
+                    'from_currency' => $baseUnit,
                     'to_currency'   => $unit,
                     'rate'          => $rate,
                 ], [
                     'date'          => $checkDate,
-                    'from_currency' => $unit,
+                    'from_currency' => $baseUnit,
                     'to_currency'   => $unit,
                     'rate'          => $rate,
                 ]);
