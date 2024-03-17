@@ -32,6 +32,8 @@ return [
 
     'exchangeRate' => [
         'domain' => env('EXCHANGERATE_URI'),
+        'history' => env('EXCHANGERATE_HISTORY_URI'),
+        'apiKey' => env('EXCHANGERATE_API_KEY'),
     ],
 
     'line'     => [

@@ -8,6 +8,7 @@
 namespace App\Models\Wallets\Databases\Services;
 
 use App\Concerns\Databases\Service;
+use App\Models\ExchangeRates\Databases\Services\ExchangeRateService;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Users\Databases\Entities\UserEntity;
@@ -97,7 +98,21 @@ class WalletApiService extends Service
                 WalletUserEntity::Table,
             ])
             ->find($this->getRequestByKey('wallets.id'));
-
+        $createTimes = $Result->wallet_details
+            ->pluck('created_at')
+            ->map(function ($item) {
+                return $item->format('Y-m-d');
+            })
+            ->uniqueStrict()
+            ->values();
+        $exchangeRateService = app(ExchangeRateService::class);
+        $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
+        $Result->wallet_details = $Result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
+            $walletDetail->exchange_rates = $exchangeRates
+                ->get($walletDetail->created_at->format('Y-m-d'), collect([]))
+                ->values();
+            return $walletDetail;
+        });
         Cache::add($CacheKey, $Result, 604800);
 
         return $Result;
