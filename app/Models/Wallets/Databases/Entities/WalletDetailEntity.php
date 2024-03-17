@@ -7,6 +7,7 @@
 
 namespace App\Models\Wallets\Databases\Entities;
 
+use App\Models\ExchangeRates\Databases\Entities\ExchangeRateEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\SymbolOperationTypes\Databases\Entities\SymbolOperationTypeEntity;
@@ -125,5 +126,10 @@ class WalletDetailEntity extends Model
     public function wallet_detail_splits()
     {
         return $this->hasMany(WalletDetailSplitEntity::class, 'wallet_detail_id', 'id');
+    }
+
+    public function exchange_rates()
+    {
+        return ExchangeRateEntity::whereDate('date', '=', $this->created_at->format('Y-m-d'))->get();
     }
 }

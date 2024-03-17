@@ -37,7 +37,7 @@ class WalletEntity extends Model
         'deleted_at',
     ];
 
-    protected $cast = [
+    protected $casts = [
         'properties' => 'json'
     ];
 

@@ -62,7 +62,7 @@ class WalletDetailApiService extends Service
                 foreach ($this->getRequestByKey('wallet_detail_splits') as $walletDetailSplit) {
                     $walletDetailSplitApiService->updateById(
                         $walletDetailSplit['id'],
-                        Arr::except($walletDetailSplit,['id'])
+                        Arr::except($walletDetailSplit, ['id'])
                     );
                 }
             }
@@ -80,13 +80,15 @@ class WalletDetailApiService extends Service
         if (is_null($this->getRequestByKey('wallet_details.id')) === true) {
             return null;
         }
-        return $this->getEntity()
+        $result = $this->getEntity()
             ->with([
                 'wallet_users',
                 'wallet_detail_splits',
             ])
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
             ->find($this->getRequestByKey('wallet_details.id'));
+
+        return $result;
     }
 
     /**
@@ -145,8 +147,10 @@ class WalletDetailApiService extends Service
     public function getWalletBalance(int $wallet_id): float
     {
         $DetailGroupBySymbol = $this->getPublicDetailByWalletId($wallet_id)->groupBy('symbol_operation_type_id');
-        return $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
-                collect([]))->sum('value')
+        return $DetailGroupBySymbol->get(
+            SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
+            collect([])
+        )->sum('value')
             -
             $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT, collect([]))->sum('value');
     }

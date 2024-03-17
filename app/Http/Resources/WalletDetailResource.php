@@ -45,7 +45,7 @@ class WalletDetailResource extends JsonResource
                 'properties'   => Arr::get($Wallet, 'properties'),
                 'created_at'   => Arr::get($Wallet, 'created_at'),
                 'updated_at'   => Arr::get($Wallet, 'updated_at'),
-                'details' => $WalletDetails->map(function ($Detail) use ($WalletUsers) {
+                'details' => $WalletDetails->map(function ($Detail) use ($Wallet, $WalletUsers) {
                     $Users = $Detail->wallet_users->pluck('id')->toArray();
                     # 公帳
                     if (Arr::get(
@@ -75,6 +75,11 @@ class WalletDetailResource extends JsonResource
                         'checkout_at'              => Arr::get($Detail, 'checkout_at'),
                         'wallet_detail_splits'     => WalletDetailSplitResource::collection(
                             $Detail->wallet_detail_splits
+                        ),
+                        'exchange_rates' => $this->handleExchangeRates(
+                            Arr::get($Detail, 'exchange_rates', []),
+                            Arr::get($Detail, 'unit'),
+                            Arr::get($Wallet, 'unit'),
                         ),
                     ];
                 })->toArray(),
@@ -131,5 +136,20 @@ class WalletDetailResource extends JsonResource
                 ],
             ],
         ];
+    }
+
+    // 想根據不同的幣別，將USD的匯率轉換成對應的幣別
+    private function handleExchangeRates($exchangeRates, $detailUnit, $walletUnit)
+    {
+        $baseExchangeRate = $exchangeRates->keyBy('to_currency')->get($walletUnit);
+        $exchangeRates = $exchangeRates->map(function ($exchangeRate) use ($baseExchangeRate, $walletUnit) {
+            return [
+                'from_currency' => $walletUnit,
+                'to_currency' => $exchangeRate['to_currency'],
+                'rate'        => $exchangeRate['rate'] / $baseExchangeRate['rate'],
+            ];
+        });
+
+        return $exchangeRates->where('to_currency', $detailUnit)->first();
     }
 }
