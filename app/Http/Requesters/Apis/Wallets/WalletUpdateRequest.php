@@ -21,7 +21,7 @@ class WalletUpdateRequest extends Request
             'wallets.user_id' => null,
             'wallets.title'   => null,
             'wallets.properties.unitConfigurable' => false,
-            'wallets.properties.decimalPlaces' => false,
+            'wallets.properties.decimalPlaces' => 0,
             'wallets.unit'    => 'TWD',
             'wallets.status'  => 1,
         ];
