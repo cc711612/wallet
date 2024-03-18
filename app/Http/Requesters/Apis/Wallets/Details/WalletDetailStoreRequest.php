@@ -28,11 +28,12 @@ class WalletDetailStoreRequest extends Request
             'wallet_details.select_all'               => 0,
             'wallet_details.value'                    => 0,
             'wallet_details.unit'                     => 'TWD',
+            'wallet_details.rates'                    => null,
+            'wallet_details.splits'                   => [],
             'wallet_details.note'                     => null,
             'wallet_details.created_by'               => null,
             'wallet_details.updated_by'               => null,
             'wallet_detail_wallet_user'               => [],
-            'wallet_detail_splits'                    => [],
         ];
     }
 
@@ -59,6 +60,8 @@ class WalletDetailStoreRequest extends Request
             'wallet_details.select_all'               => Arr::get($row, 'select_all'),
             'wallet_details.value'                    => Arr::get($row, 'value'),
             'wallet_details.unit'                     => Arr::get($row, 'unit'),
+            'wallet_details.rates'                    => Arr::get($row, 'rates'),
+            'wallet_details.splits'                   => Arr::get($row, 'splits'),
             'wallet_details.note'                     => Arr::get($row, 'note'),
             'wallet_details.created_by'               => Arr::get(
                 $row,
@@ -69,7 +72,6 @@ class WalletDetailStoreRequest extends Request
                 sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))
             ),
             'wallet_detail_wallet_user'               => Arr::get($row, 'users'),
-            'wallet_detail_splits'                    => Arr::get($row, 'wallet_detail_splits', []),
         ];
     }
 }
