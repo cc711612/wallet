@@ -42,6 +42,7 @@ class WalletDetailResource extends JsonResource
                 'code'    => Arr::get($Wallet, 'code'),
                 'title'   => Arr::get($Wallet, 'title'),
                 'status'   => Arr::get($Wallet, 'status'),
+                'user'    => Arr::get($Wallet, 'users', []),
                 'properties'   => Arr::get($Wallet, 'properties'),
                 'created_at'   => Arr::get($Wallet, 'created_at'),
                 'updated_at'   => Arr::get($Wallet, 'updated_at'),
@@ -73,17 +74,16 @@ class WalletDetailResource extends JsonResource
                         'created_at'               => Arr::get($Detail, 'created_at')->toDateTimeString(),
                         'updated_at'               => Arr::get($Detail, 'updated_at')->toDateTimeString(),
                         'checkout_at'              => Arr::get($Detail, 'checkout_at'),
-                        'wallet_detail_splits'     => WalletDetailSplitResource::collection(
-                            $Detail->wallet_detail_splits
-                        ),
                         'exchange_rates' => $this->handleExchangeRates(
                             Arr::get($Detail, 'exchange_rates', []),
                             Arr::get($Detail, 'unit'),
                             Arr::get($Wallet, 'unit'),
                         ),
+                        'rates'                    => Arr::get($Detail, 'rates') ? (float) Arr::get($Detail, 'rates') : null,
+                        'splits'                   => Arr::get($Detail, 'splits', []),
                     ];
                 })->toArray(),
-                'users'   => Arr::get($Wallet, 'wallet_users', []),
+                'wallet_users'   => Arr::get($Wallet, 'wallet_users', []),
                 'total'   => [
                     'income'   => $WalletDetailGroupBySymbolType->get(
                         SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
@@ -119,6 +119,8 @@ class WalletDetailResource extends JsonResource
                     'symbol_operation_type_id' => Arr::get($Detail, 'symbol_operation_type_id'),
                     'select_all'               => Arr::get($Detail, 'select_all'),
                     'value'                    => Arr::get($Detail, 'value'),
+                    'rates'                    => Arr::get($Detail, 'rates') ? (float) Arr::get($Detail, 'rates') : null,
+                    'splits'                   => Arr::get($Detail, 'splits', []),
                     'note'                     => Arr::get($Detail, 'note'),
                     'created_by'               => Arr::get($Detail, 'created_by'),
                     'checkout_by'              => Arr::get($Detail, 'checkout_by'),
@@ -130,9 +132,6 @@ class WalletDetailResource extends JsonResource
                         'wallet_users',
                         collect([])
                     )->pluck('id')->toArray(),
-                    'wallet_detail_splits'     => WalletDetailSplitResource::collection(
-                        $this->resource->wallet_detail_splits
-                    ),
                 ],
             ],
         ];

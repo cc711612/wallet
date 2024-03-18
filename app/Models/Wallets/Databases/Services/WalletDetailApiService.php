@@ -57,15 +57,8 @@ class WalletDetailApiService extends Service
                     $Users = $Entity->wallets()->first()->wallet_users()->get()->pluck('id')->toArray();
                 }
                 $Entity->wallet_users()->sync($Users);
-                $walletDetailSplitApiService = app(WalletDetailSplitApiService::class);
-                # 自定義分帳
-                foreach ($this->getRequestByKey('wallet_detail_splits') as $walletDetailSplit) {
-                    $walletDetailSplitApiService->updateById(
-                        $walletDetailSplit['id'],
-                        Arr::except($walletDetailSplit, ['id'])
-                    );
-                }
             }
+
             return $Entity->update($this->getRequestByKey('wallet_details'));
         });
     }
@@ -83,7 +76,6 @@ class WalletDetailApiService extends Service
         $result = $this->getEntity()
             ->with([
                 'wallet_users',
-                'wallet_detail_splits',
             ])
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
             ->find($this->getRequestByKey('wallet_details.id'));
