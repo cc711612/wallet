@@ -34,6 +34,8 @@ class WalletDetailEntity extends Model
         'unit',
         'symbol_operation_type_id',
         'value',
+        'rates',
+        'splits',
         'note',
         'select_all',
         'checkout_by',
@@ -52,6 +54,10 @@ class WalletDetailEntity extends Model
      * @var array
      */
     protected $hidden = [];
+
+    protected $casts = [
+        'splits' => 'json',
+    ];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

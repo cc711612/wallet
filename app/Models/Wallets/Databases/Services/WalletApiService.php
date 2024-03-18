@@ -92,12 +92,15 @@ class WalletApiService extends Service
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail->with([
                         WalletUserEntity::Table,
-                        WalletDetailSplitEntity::Table,
                     ]);
                 },
                 WalletUserEntity::Table,
+                UserEntity::Table => function ($queryUser) {
+                    return $queryUser->select(['id', 'name']);
+                }
             ])
             ->find($this->getRequestByKey('wallets.id'));
+
         $createTimes = $Result->wallet_details
             ->pluck('created_at')
             ->map(function ($item) {
@@ -105,6 +108,7 @@ class WalletApiService extends Service
             })
             ->uniqueStrict()
             ->values();
+
         $exchangeRateService = app(ExchangeRateService::class);
         $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
         $Result->wallet_details = $Result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
@@ -113,7 +117,8 @@ class WalletApiService extends Service
                 ->values();
             return $walletDetail;
         });
-        Cache::add($CacheKey, $Result, 604800);
+
+        Cache::add($CacheKey, $Result, 3600);
 
         return $Result;
     }
@@ -138,7 +143,7 @@ class WalletApiService extends Service
             ->where('code', $this->getRequestByKey('wallets.code'))
             ->first();
 
-        Cache::add($CacheKey, $Result, 604800);
+        Cache::add($CacheKey, $Result, 3600);
         return $Result;
     }
 
@@ -224,10 +229,6 @@ class WalletApiService extends Service
                 }
                 # 分帳人
                 $DetailEntity->wallet_users()->sync($Users);
-                # 自定義分帳
-                foreach ($this->getRequestByKey('wallet_detail_splits') as $walletDetailSplit) {
-                    $DetailEntity->wallet_detail_splits()->create($walletDetailSplit);
-                }
             }
             return $DetailEntity;
         });
