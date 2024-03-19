@@ -6,7 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
-use App\Http\Resources\WalletDetailSplitResource;
 
 class WalletDetailResource extends JsonResource
 {
@@ -42,7 +41,7 @@ class WalletDetailResource extends JsonResource
                 'code'    => Arr::get($Wallet, 'code'),
                 'title'   => Arr::get($Wallet, 'title'),
                 'status'   => Arr::get($Wallet, 'status'),
-                'user'    => Arr::get($Wallet, 'wallet_users_created')->first(),
+                'wallet_user'    => Arr::get($Wallet, 'wallet_user_created')->first(),
                 'properties'   => Arr::get($Wallet, 'properties'),
                 'created_at'   => Arr::get($Wallet, 'created_at'),
                 'updated_at'   => Arr::get($Wallet, 'updated_at'),
