@@ -95,7 +95,7 @@ class WalletApiService extends Service
                     ]);
                 },
                 WalletUserEntity::Table,
-                'created_user'
+                'wallet_user_created'
             ])
             ->find($this->getRequestByKey('wallets.id'));
 
