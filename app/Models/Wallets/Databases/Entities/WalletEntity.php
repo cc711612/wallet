@@ -68,7 +68,7 @@ class WalletEntity extends Model
         return $this->hasMany(WalletUserEntity::class, 'wallet_id', 'id');
     }
 
-    public function wallet_users_created()
+    public function wallet_user_created()
     {
         return $this->hasMany(WalletUserEntity::class, 'wallet_id', 'id')
             ->where('is_admin', 1);
