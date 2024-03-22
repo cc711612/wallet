@@ -86,6 +86,15 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
                 'required',
                 'integer',
             ],
+            'wallet_details.splits.*.user_id'                    => [
+                'bail',
+                Rule::exists('wallet_users', 'id')->where(function ($query) {
+                    return $query->where('wallet_id', $this->request->wallets['id']);
+                }),
+            ],
+            'wallet_details.splits.*.value'                    => [
+                'bail'
+            ],
         ];
     }
 

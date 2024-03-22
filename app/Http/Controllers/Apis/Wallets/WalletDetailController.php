@@ -131,6 +131,14 @@ class WalletDetailController extends ApiController
                 return $this->response()->errorBadRequest("分攤成員有誤");
             }
         }
+
+        // 核對分攤金額是否加總與總金額相符
+        if ($splits = Arr::get($requester, 'wallet_details.splits')) {
+            if (collect($splits)->sum('value') != Arr::get($requester, 'wallet_details.value')) {
+                return $this->response()->errorBadRequest("分攤金額不符合總金額");
+            }
+        }
+
         try {
             $this->wallet_api_service
                 ->setRequest($requester->toArray())
@@ -195,6 +203,13 @@ class WalletDetailController extends ApiController
                 ->validateWalletUsers();
             if ($ValidateWalletUsers === false) {
                 return $this->response()->errorBadRequest("分攤成員有誤");
+            }
+        }
+
+        // 核對分攤金額是否加總與總金額相符
+        if ($splits = Arr::get($requester, 'wallet_details.splits')) {
+            if (collect($splits)->sum('value') != Arr::get($requester, 'wallet_details.value')) {
+                return $this->response()->errorBadRequest("分攤金額不符合總金額");
             }
         }
 
