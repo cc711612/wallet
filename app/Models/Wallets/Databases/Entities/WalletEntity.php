@@ -74,6 +74,7 @@ class WalletEntity extends Model
             ->where('is_admin', 1);
     }
 
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * @Author: Roy

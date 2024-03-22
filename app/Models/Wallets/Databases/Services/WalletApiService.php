@@ -91,11 +91,15 @@ class WalletApiService extends Service
             ->with([
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail->with([
-                        WalletUserEntity::Table,
+                        WalletUserEntity::Table
                     ]);
                 },
-                WalletUserEntity::Table,
-                'wallet_user_created'
+                WalletUserEntity::Table => function ($query) {
+                    $query->select(['id', 'wallet_id', 'user_id', 'name', 'created_at', 'updated_at']);
+                },
+                'wallet_user_created' => function ($query) {
+                    $query->select(['id', 'wallet_id', 'user_id', 'name', 'created_at', 'updated_at']);
+                }
             ])
             ->find($this->getRequestByKey('wallets.id'));
 
