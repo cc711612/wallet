@@ -7,7 +7,7 @@ use Carbon\CarbonPeriod;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
-class WalletDetailSplitCommand extends Command
+class ExchangeRateCommand extends Command
 {
     /**
      * The name and signature of the console command.
