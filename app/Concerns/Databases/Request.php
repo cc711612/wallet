@@ -236,7 +236,7 @@ abstract class Request implements ArrayAccess, RequestContract
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->getAttribute($offset);
     }
