@@ -14,6 +14,7 @@ use App\Http\Validators\Apis\Auth\LoginValidator;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ApiController;
 use App\Http\Resources\AuthResource;
+use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use Cache;
 
 /**
@@ -37,7 +38,6 @@ class LoginController extends ApiController
     public function login(Request $request)
     {
         $Requester = (new LoginRequest($request));
-
         $Validate = (new LoginValidator($Requester))->validate();
         if ($Validate->fails() === true) {
             return $this->response()->errorBadRequest($Validate->errors()->first());
@@ -47,6 +47,13 @@ class LoginController extends ApiController
         #認證失敗
         if (!Auth::attempt($credentials)) {
             return $this->response()->errorBadRequest("密碼有誤");
+        }
+        // 綁定
+        if ($Requester->type == 'bind') {
+            $bind = app(WalletUserApiService::class)->walletUserBindByUserId(Auth::user()->id, $Requester->jwt_token);
+            if ($bind['status'] === false) {
+                return $this->response()->errorBadRequest($bind['message']);
+            }
         }
 
         # set cache
