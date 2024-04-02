@@ -59,7 +59,7 @@ class WalletUserApiService extends Service
     }
 
     /**
-     * @return null
+     * @return WalletUserEntity|null
      * @Author: Roy
      * @DateTime: 2022/6/21 下午 05:11
      */
@@ -207,6 +207,36 @@ class WalletUserApiService extends Service
         return [
             'status' => false,
             'message' => '系統錯誤查詢不到綁定資訊'
+        ];
+    }
+
+    public function walletUserBindByUserIdAndWalletId($userId, $walletId, $walletUserId)
+    {
+        if ($this->isExistWalletUserByWalletIdAndUserId($walletId, $userId)) {
+            return [
+                'status' => false,
+                'message' => '已綁定過此帳本'
+            ];
+        }
+
+        $walletUser = $this->getEntity()
+            ->where('id', $walletUserId)
+            ->where('wallet_id', $walletId)
+            ->where('user_id', null)
+            ->first();
+
+        if ($walletUser) {
+            $walletUser->user_id = $userId;
+            $walletUser->save();
+            return [
+                'status' => true,
+                'message' => '綁定成功'
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => '已被綁定或是有重複的帳本使用者'
         ];
     }
 
