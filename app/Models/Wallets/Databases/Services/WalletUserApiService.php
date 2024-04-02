@@ -163,4 +163,12 @@ class WalletUserApiService extends Service
         }
         $this->cleanToken($walletUserEntity->token);
     }
+
+    public function getWalletUserByUserId($userId): Collection
+    {
+        return $this->getEntity()
+            ->select(['id', 'user_id', 'wallet_id', 'is_admin'])
+            ->where('user_id', $userId)
+            ->get();
+    }
 }

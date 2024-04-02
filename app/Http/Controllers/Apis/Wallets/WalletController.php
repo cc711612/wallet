@@ -48,8 +48,10 @@ class WalletController extends ApiController
         $requester = (new WalletIndexRequest($request));
 
         $Wallets = $this->wallet_api_service
+            ->setPageCount($requester->page_count)
             ->setRequest($requester->toArray())
             ->paginate();
+
         return $this->response()->success(
             (new WalletResource($Wallets))
                 ->index()
