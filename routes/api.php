@@ -74,6 +74,8 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
             Route::name("index")->post("/list", [WalletController::class, 'index']);
             Route::name("get")->get("/", [WalletController::class, 'index']);
+            # 綁定訪客帳本
+            Route::name("bind")->post("/bind", [WalletController::class, 'bind']);
         });
         # 帳本
         Route::resource('wallet', WalletController::class)->only(['store', 'update', 'destroy']);

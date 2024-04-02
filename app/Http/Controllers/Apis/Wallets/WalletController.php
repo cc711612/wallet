@@ -18,7 +18,10 @@ use App\Http\Validators\Apis\Wallets\WalletUpdateValidator;
 use App\Http\Requesters\Apis\Wallets\WalletCalculationRequest;
 use App\Http\Validators\Apis\Wallets\WalletCalculationValidator;
 use App\Http\Controllers\ApiController;
+use App\Http\Requesters\Apis\Wallets\WalletBindRequest;
 use App\Http\Resources\WalletResource;
+use App\Http\Validators\Apis\Wallets\Auth\LoginValidator;
+use App\Models\Wallets\Databases\Services\WalletUserApiService;
 
 class WalletController extends ApiController
 {
@@ -48,8 +51,10 @@ class WalletController extends ApiController
         $requester = (new WalletIndexRequest($request));
 
         $Wallets = $this->wallet_api_service
+            ->setPageCount($requester->page_count)
             ->setRequest($requester->toArray())
             ->paginate();
+
         return $this->response()->success(
             (new WalletResource($Wallets))
                 ->index()
@@ -140,5 +145,47 @@ class WalletController extends ApiController
             (new WalletResource($Wallet))
                 ->calculation()
         );
+    }
+
+    public function bind(Request $request)
+    {
+        $requester = (new WalletBindRequest($request));
+
+        $wallet = (new WalletApiService())
+            ->setRequest($requester->toArray())
+            ->getWalletByCode();
+
+        if (is_null($wallet)) {
+            return $this->response()->errorBadRequest("此帳簿不存在");
+        }
+
+        $requester->__set('wallets.id', is_null($wallet) ? null : $wallet->id);
+        $requester->__set('wallet_users.wallet_id', is_null($wallet) ? null : $wallet->id);
+
+        $validate = (new LoginValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
+        }
+
+        $userEntity = (new WalletUserApiService())
+            ->setRequest($requester->toArray())
+            ->getWalletUserByNameAndWalletId();
+
+        if (is_null($userEntity)) {
+            return $this->response()->errorBadRequest("系統錯誤");
+        }
+
+        $bind = app(WalletUserApiService::class)
+            ->walletUserBindByUserIdAndWalletId(
+                $requester->users['id'],
+                $requester->wallets['id'],
+                $userEntity->id
+            );
+
+        if ($bind['status'] === false) {
+            return $this->response()->errorBadRequest($bind['message']);
+        }
+
+        return $this->response()->success(null, '綁定成功');
     }
 }

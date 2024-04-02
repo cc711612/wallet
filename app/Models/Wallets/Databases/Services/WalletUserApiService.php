@@ -14,6 +14,9 @@ use App\Models\Wallets\Databases\Entities\WalletEntity;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Caches\CacheTrait;
 use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
+use Crypt;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -56,7 +59,7 @@ class WalletUserApiService extends Service
     }
 
     /**
-     * @return null
+     * @return WalletUserEntity|null
      * @Author: Roy
      * @DateTime: 2022/6/21 下午 05:11
      */
@@ -162,5 +165,86 @@ class WalletUserApiService extends Service
             Cache::forget('wallet_user_' . $walletUserEntity->id);
         }
         $this->cleanToken($walletUserEntity->token);
+    }
+
+    public function getWalletUserByUserId($userId): Collection
+    {
+        return $this->getEntity()
+            ->select(['id', 'user_id', 'wallet_id', 'is_admin'])
+            ->where('user_id', $userId)
+            ->get();
+    }
+
+    public function walletUserBindByUserId($userId, $jwtToken)
+    {
+        $tokenPayload = JWT::decode($jwtToken, new Key(config('app.name'), 'HS256'));
+        // toArray
+        $tokenPayload = $tokenPayload ? json_decode(json_encode($tokenPayload), 1) : [];
+        if (!empty($tokenPayload['wallet_user']['id'])) {
+            $walletUserId = Crypt::decryptString($tokenPayload['wallet_user']['id']);
+            $walletUser = $this->getWalletUserByWalletUserId($walletUserId);
+            if ($walletUser->isNotEmpty()) {
+                $walletUser = $walletUser->first();
+                $walletId = $walletUser->wallet_id;
+                // 檢查是否重複帳本成員以及是否被綁定
+                if (
+                    !$this->isExistWalletUserByWalletIdAndUserId($walletId, $userId) &&
+                    is_null($walletUser->user_id)
+                ) {
+                    $walletUser->user_id = $userId;
+                    $walletUser->save();
+                    return [
+                        'status' => true,
+                        'message' => '綁定成功'
+                    ];
+                }
+                return [
+                    'status' => false,
+                    'message' => '已被綁定或是有重複的帳本使用者'
+                ];
+            }
+        }
+        return [
+            'status' => false,
+            'message' => '系統錯誤查詢不到綁定資訊'
+        ];
+    }
+
+    public function walletUserBindByUserIdAndWalletId($userId, $walletId, $walletUserId)
+    {
+        if ($this->isExistWalletUserByWalletIdAndUserId($walletId, $userId)) {
+            return [
+                'status' => false,
+                'message' => '已綁定過此帳本'
+            ];
+        }
+
+        $walletUser = $this->getEntity()
+            ->where('id', $walletUserId)
+            ->where('wallet_id', $walletId)
+            ->where('user_id', null)
+            ->first();
+
+        if ($walletUser) {
+            $walletUser->user_id = $userId;
+            $walletUser->save();
+            return [
+                'status' => true,
+                'message' => '綁定成功'
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => '已被綁定或是有重複的帳本使用者'
+        ];
+    }
+
+    public function isExistWalletUserByWalletIdAndUserId($walletId, $userId)
+    {
+        return $this->getEntity()
+            ->where('wallet_id', $walletId)
+            ->where('user_id', $userId)
+            ->exists();
     }
 }

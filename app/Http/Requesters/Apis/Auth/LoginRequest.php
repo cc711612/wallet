@@ -19,6 +19,8 @@ class LoginRequest extends Request
             'users.account'  => null,
             'password'       => null,
             'users.password' => null,
+            'jwt_token' => null,
+            'type' => null,
         ];
     }
 
@@ -36,7 +38,8 @@ class LoginRequest extends Request
             'users.account'  => Arr::get($row, 'account'),
             'password'       => Arr::get($row, 'password'),
             'users.password' => Arr::get($row, 'password'),
+            'type' => Arr::get($row, 'type'),
+            'jwt_token' => $row->bearerToken(),
         ];
     }
-
 }

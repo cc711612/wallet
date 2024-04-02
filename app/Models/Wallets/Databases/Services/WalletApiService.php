@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Models\Wallets\Databases\Entities\WalletDetailSplitEntity;
 
 class WalletApiService extends Service
 {
@@ -55,18 +54,31 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('per_page')) === false) {
             $page_count = $this->getRequestByKey('per_page');
         }
+        $walletIds = [];
+        if ($this->getRequestByKey('wallets.is_guest')) {
+            $walletUsers = app(WalletUserApiService::class)
+                ->getWalletUserByUserId($this->getRequestByKey('users.id'));
 
+            $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+        }
         $Result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
                     $query->select(['id', 'name']);
                 },
             ])
-            ->where('user_id', $this->getRequestByKey('users.id'))
+            ->when($this->getRequestByKey('wallets.is_guest'), function ($query) use ($walletIds) {
+                return $query->whereIn('id', $walletIds);
+            })
+            ->when(!$this->getRequestByKey('wallets.is_guest'), function ($query) {
+                return $query->where('user_id', $this->getRequestByKey('users.id'));
+            })
+            ->when(is_numeric($this->getRequestByKey('wallets.status')), function ($query) {
+                return $query->where('status', $this->getRequestByKey('wallets.status'));
+            })
             ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
 
         return $Result
-            //            ->where('status', 1)
             ->orderByDesc('updated_at')
             ->paginate($page_count);
     }
