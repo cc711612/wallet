@@ -16,6 +16,9 @@ class WalletIndexRequest extends Request
     {
         return [
             'users.id' => null,
+            'page_count' => 50,
+            'wallets.status' => 1,
+            'wallets.is_guest' => 0,
         ];
     }
 
@@ -30,6 +33,9 @@ class WalletIndexRequest extends Request
     {
         return [
             'users.id' => Arr::get($row, 'user.id'),
+            'page_count' => Arr::get($row, 'page_count'),
+            'wallets.status' => (int) Arr::get($row, 'status'),
+            'wallets.is_guest' => (bool) Arr::get($row, 'is_guest'),
         ];
     }
 }
