@@ -17,6 +17,7 @@ class WalletDetailIndexRequest extends Request
         return [
             'wallets.id'      => null,
             'wallet_users.id' => null,
+            'wallet_details.is_personal' => 0,
         ];
     }
 
@@ -31,7 +32,8 @@ class WalletDetailIndexRequest extends Request
     {
         return [
             'wallets.id'      => Arr::get($row, 'wallet'),
-            'wallet_users.id' => Arr::get($row, sprintf("wallet_user.%s.id",Arr::get($row, 'wallet'))),
+            'wallet_users.id' => Arr::get($row, sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))),
+            'wallet_details.is_personal' => Arr::get($row, 'is_personal'),
         ];
     }
 }
