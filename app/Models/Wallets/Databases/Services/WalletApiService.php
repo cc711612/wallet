@@ -93,18 +93,27 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('wallets.id'))) {
             return null;
         }
-        $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $this->getRequestByKey('wallets.id'));
-        # Cache
-        if (Cache::has($CacheKey) === true) {
-            return Cache::get($CacheKey);
-        }
+        // $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $this->getRequestByKey('wallets.id'));
+        // # Cache
+        // if (Cache::has($CacheKey) === true) {
+        //     return Cache::get($CacheKey);
+        // }
 
         $Result = $this->getEntity()
             ->with([
                 WalletDetailEntity::Table => function ($queryDetail) {
-                    return $queryDetail->with([
-                        WalletUserEntity::Table
-                    ]);
+                    return $queryDetail
+                        ->with([
+                            WalletUserEntity::Table
+                        ])
+                        ->where(function ($query) {
+                            $query
+                                ->when($this->getRequestByKey('wallet_details.is_personal'), function ($subQuery) {
+                                    $subQuery
+                                        ->where('created_by', $this->getRequestByKey('wallet_users.id'));
+                                })
+                                ->where('is_personal', $this->getRequestByKey('wallet_details.is_personal'));
+                        });
                 },
                 WalletUserEntity::Table => function ($query) {
                     $query->select(['id', 'wallet_id', 'user_id', 'name', 'created_at', 'updated_at']);
@@ -132,7 +141,7 @@ class WalletApiService extends Service
             return $walletDetail;
         });
 
-        Cache::add($CacheKey, $Result, 3600);
+        // Cache::add($CacheKey, $Result, 3600);
 
         return $Result;
     }
