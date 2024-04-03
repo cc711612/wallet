@@ -93,11 +93,11 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('wallets.id'))) {
             return null;
         }
-        $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $this->getRequestByKey('wallets.id'));
-        # Cache
-        if (Cache::has($CacheKey) === true) {
-            return Cache::get($CacheKey);
-        }
+        // $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $this->getRequestByKey('wallets.id'));
+        // # Cache
+        // if (Cache::has($CacheKey) === true) {
+        //     return Cache::get($CacheKey);
+        // }
 
         $Result = $this->getEntity()
             ->with([
@@ -132,7 +132,7 @@ class WalletApiService extends Service
             return $walletDetail;
         });
 
-        Cache::add($CacheKey, $Result, 3600);
+        // Cache::add($CacheKey, $Result, 3600);
 
         return $Result;
     }
