@@ -170,6 +170,17 @@ class WalletApiService extends Service
         return $Result;
     }
 
+    public function forgetWalletUsersCache($walletCode = null)
+    {
+        $cacheKey = sprintf($this->getCacheKeyFormat(), $walletCode);
+        # cache forget
+        if (Cache::has($cacheKey) === true) {
+            return Cache::forget($cacheKey);
+        }
+
+        return true;
+    }
+
     /**
      * @return mixed
      * @throws \Throwable
