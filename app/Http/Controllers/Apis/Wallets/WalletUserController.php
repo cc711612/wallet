@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/20 下午 03:39
@@ -15,6 +16,9 @@ use App\Http\Validators\Apis\Wallets\Users\WalletUserDestroyValidator;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use App\Http\Resources\WalletUserResource;
 use App\Http\Controllers\ApiController;
+use App\Http\Requesters\Apis\Wallets\Users\WalletUserUpdateRequest;
+use App\Http\Validators\Apis\Wallets\Users\WalletUserUpdateValidator;
+use Illuminate\Support\Arr;
 
 class WalletUserController extends ApiController
 {
@@ -60,6 +64,31 @@ class WalletUserController extends ApiController
             ->getWalletWithUserByCode();
 
         return $this->response()->success((new WalletUserResource($Wallet))->index());
+    }
+
+    public function update(Request $request)
+    {
+        $walletUser  = $this->wallet_user_api_service
+            ->find(Arr::get($request, 'wallet_users_id'));
+        if ($walletUser) {
+            $request->merge([
+                'wallet_id' => $walletUser->wallet_id,
+            ]);
+        }
+        $requester = (new WalletUserUpdateRequest($request));
+
+        $validate = (new WalletUserUpdateValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
+        }
+
+        $this->wallet_user_api_service
+            ->update(
+                Arr::get($requester, 'wallet_users.id'),
+                Arr::get($requester, 'wallet_users'),
+            );
+
+        return $this->response()->success();
     }
 
     /**

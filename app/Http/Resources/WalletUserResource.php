@@ -32,6 +32,7 @@ class WalletUserResource extends JsonResource
                     return [
                         'id'       => Arr::get($User, 'id'),
                         'name'     => Arr::get($User, 'name'),
+                        'user_id'  => Arr::get($User, 'user_id'),
                         'is_admin' => Arr::get($User, 'is_admin') ? true : false,
                     ];
                 }),
