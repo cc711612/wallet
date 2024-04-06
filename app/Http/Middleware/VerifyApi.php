@@ -29,7 +29,16 @@ class VerifyApi
 
         // jwt
         if ($request->bearerToken()) {
-            $tokenPayload = JWT::decode($request->bearerToken(), new Key(config('app.name'), 'HS256'));
+            try {
+                $tokenPayload = JWT::decode($request->bearerToken(), new Key(config('app.name'), 'HS256'));
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status'  => false,
+                    'code'    => 401,
+                    'message' => '請重新登入',
+                    'data'    => [],
+                ], 401);
+            }
             // toArray
             $tokenPayload = $tokenPayload ? json_decode(json_encode($tokenPayload), 1) : [];
             if (!empty($tokenPayload['user']['id'])) {
