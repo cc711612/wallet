@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requesters\Apis\Wallets\Details;
+namespace App\Http\Requesters\Apis\Wallets\Users;
 
 use App\Concerns\Databases\Request;
 use Illuminate\Support\Arr;
 
-class WalletDetailIndexRequest extends Request
+class WalletUserUpdateRequest extends Request
 {
     /**
      * @return null[]
@@ -15,9 +15,9 @@ class WalletDetailIndexRequest extends Request
     protected function schema(): array
     {
         return [
-            'wallets.id'      => null,
+            'wallet_users_id'   => null,
+            'wallet_users.name' => null,
             'wallet_users.id' => null,
-            'wallet_details.is_personal' => 0,
         ];
     }
 
@@ -31,9 +31,9 @@ class WalletDetailIndexRequest extends Request
     protected function map($row): array
     {
         return [
-            'wallets.id'      => Arr::get($row, 'wallet'),
-            'wallet_users.id' => Arr::get($row, sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))),
-            'wallet_details.is_personal' => Arr::get($row, 'is_personal'),
+            'wallet_users_id' => Arr::get($row, sprintf("wallet_user.%s.id", Arr::get($row, 'wallet_id'))),
+            'wallet_users.name' => Arr::get($row, 'name'),
+            'wallet_users.id' => Arr::get($row, 'wallet_users_id'),
         ];
     }
 }

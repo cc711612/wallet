@@ -58,6 +58,9 @@ class WalletUserObserver
         if ($WalletUserEntity->deleted_at) {
             app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
         }
+
+        $this->forgetWalletUsersCache($WalletUserEntity);
+
         return $this->wallet_api_service->update(
             $WalletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
@@ -79,6 +82,7 @@ class WalletUserObserver
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
         app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
+        $this->forgetWalletUsersCache($WalletUserEntity);
     }
 
     /**
@@ -103,5 +107,13 @@ class WalletUserObserver
     public function forceDeleted(WalletUserEntity $WalletUserEntity)
     {
         //
+    }
+
+    public function forgetWalletUsersCache(WalletUserEntity $WalletUserEntity)
+    {
+        $wallet = $WalletUserEntity->wallets()->first();
+        if ($wallet) {
+            app(WalletApiService::class)->forgetWalletUsersCache($wallet->code);
+        }
     }
 }

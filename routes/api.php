@@ -83,6 +83,9 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
     # 需要wallet_member_token的
     Route::group(['middleware' => ['VerifyWalletMemberApi']], function () {
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
+            Route::group(['as' => 'user.', 'prefix' => 'user'], function () {
+                Route::name("update")->put("{wallet_users_id}", [WalletUserController::class, 'update']);
+            });
             # 帳本明細
             Route::group(['prefix' => '{wallet}'], function () {
                 Route::group(['prefix' => 'detail', 'as' => 'detail.'], function () {

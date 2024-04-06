@@ -34,6 +34,7 @@ class WalletDetailEntity extends Model
         'unit',
         'symbol_operation_type_id',
         'value',
+        'is_personal',
         'rates',
         'splits',
         'note',
