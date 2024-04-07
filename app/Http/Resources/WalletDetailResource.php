@@ -32,7 +32,7 @@ class WalletDetailResource extends JsonResource
         $WalletDetails = $Wallet->wallet_details;
         $WalletUsers = $Wallet->wallet_users->pluck('id');
         $WalletDetailGroupBySymbolType = $WalletDetails
-            ->where('select_all', 0)
+            ->where('type', 1)
             ->groupBy('symbol_operation_type_id');
 
         return [
