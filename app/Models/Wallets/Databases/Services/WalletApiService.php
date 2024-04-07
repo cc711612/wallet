@@ -112,7 +112,10 @@ class WalletApiService extends Service
                                     $subQuery
                                         ->where('created_by', $this->getRequestByKey('wallet_users.id'));
                                 })
-                                ->where('is_personal', $this->getRequestByKey('wallet_details.is_personal'));
+                                ->when(!is_null($this->getRequestByKey('wallet_details.is_personal')), function ($subQuery) {
+                                    $subQuery
+                                        ->where('is_personal', $this->getRequestByKey('wallet_details.is_personal'));
+                                });
                         });
                 },
                 WalletUserEntity::Table => function ($query) {
