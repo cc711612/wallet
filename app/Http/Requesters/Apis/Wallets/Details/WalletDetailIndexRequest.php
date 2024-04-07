@@ -17,7 +17,7 @@ class WalletDetailIndexRequest extends Request
         return [
             'wallets.id'      => null,
             'wallet_users.id' => null,
-            'wallet_details.is_personal' => 0,
+            'wallet_details.is_personal' => null,
         ];
     }
 
