@@ -74,6 +74,8 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
             Route::name("index")->post("/list", [WalletController::class, 'index']);
             Route::name("get")->get("/", [WalletController::class, 'index']);
+            # 綁定訪客帳本
+            Route::name("bind")->post("/bind", [WalletController::class, 'bind']);
         });
         # 帳本
         Route::resource('wallet', WalletController::class)->only(['store', 'update', 'destroy']);
@@ -81,6 +83,9 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
     # 需要wallet_member_token的
     Route::group(['middleware' => ['VerifyWalletMemberApi']], function () {
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
+            Route::group(['as' => 'user.', 'prefix' => 'user'], function () {
+                Route::name("update")->put("{wallet_users_id}", [WalletUserController::class, 'update']);
+            });
             # 帳本明細
             Route::group(['prefix' => '{wallet}'], function () {
                 Route::group(['prefix' => 'detail', 'as' => 'detail.'], function () {

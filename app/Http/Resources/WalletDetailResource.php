@@ -6,7 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
-use App\Http\Resources\WalletDetailSplitResource;
 
 class WalletDetailResource extends JsonResource
 {
@@ -33,7 +32,7 @@ class WalletDetailResource extends JsonResource
         $WalletDetails = $Wallet->wallet_details;
         $WalletUsers = $Wallet->wallet_users->pluck('id');
         $WalletDetailGroupBySymbolType = $WalletDetails
-            ->where('select_all', 0)
+            ->where('type', 1)
             ->groupBy('symbol_operation_type_id');
 
         return [
@@ -42,7 +41,8 @@ class WalletDetailResource extends JsonResource
                 'code'    => Arr::get($Wallet, 'code'),
                 'title'   => Arr::get($Wallet, 'title'),
                 'status'   => Arr::get($Wallet, 'status'),
-                'user'    => Arr::get($Wallet, 'wallet_users_created')->first(),
+                'unit'   => Arr::get($Wallet, 'unit'),
+                'wallet_user'    => Arr::get($Wallet, 'wallet_user_created')->first(),
                 'properties'   => Arr::get($Wallet, 'properties'),
                 'created_at'   => Arr::get($Wallet, 'created_at'),
                 'updated_at'   => Arr::get($Wallet, 'updated_at'),
@@ -65,6 +65,7 @@ class WalletDetailResource extends JsonResource
                         'payment_user_id'          => Arr::get($Detail, 'payment_wallet_user_id'),
                         'symbol_operation_type_id' => Arr::get($Detail, 'symbol_operation_type_id'),
                         'select_all'               => Arr::get($Detail, 'select_all') ? true : false,
+                        'is_personal'               => Arr::get($Detail, 'is_personal') ? true : false,
                         'value'                    => Arr::get($Detail, 'value', 0),
                         'unit'                     => Arr::get($Detail, 'unit'),
                         'users'                    => $Users,
@@ -118,6 +119,7 @@ class WalletDetailResource extends JsonResource
                     'title'                    => Arr::get($Detail, 'title'),
                     'symbol_operation_type_id' => Arr::get($Detail, 'symbol_operation_type_id'),
                     'select_all'               => Arr::get($Detail, 'select_all'),
+                    'is_personal'               => Arr::get($Detail, 'is_personal') ? true : false,
                     'value'                    => Arr::get($Detail, 'value'),
                     'rates'                    => Arr::get($Detail, 'rates') ? (float) Arr::get($Detail, 'rates') : null,
                     'splits'                   => Arr::get($Detail, 'splits', []),

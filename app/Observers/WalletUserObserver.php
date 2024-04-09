@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Users\Databases\Services\UserApiService;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use App\Models\Wallets\Databases\Services\WalletApiService;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
@@ -58,6 +59,9 @@ class WalletUserObserver
         if ($WalletUserEntity->deleted_at) {
             app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
         }
+
+        $this->forgetWalletUsersCache($WalletUserEntity);
+
         return $this->wallet_api_service->update(
             $WalletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
@@ -79,6 +83,7 @@ class WalletUserObserver
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
         app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
+        $this->forgetWalletUsersCache($WalletUserEntity);
     }
 
     /**
@@ -103,5 +108,14 @@ class WalletUserObserver
     public function forceDeleted(WalletUserEntity $WalletUserEntity)
     {
         //
+    }
+
+    public function forgetWalletUsersCache(WalletUserEntity $WalletUserEntity)
+    {
+        $wallet = $WalletUserEntity->wallets()->first();
+        if ($wallet) {
+            app(WalletApiService::class)->forgetWalletUsersCache($wallet->code);
+        }
+        app(UserApiService::class)->forgetFindCache($WalletUserEntity->user_id);
     }
 }

@@ -214,7 +214,7 @@ abstract class Request implements ArrayAccess, RequestContract
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->attributes[$offset]);
     }
@@ -236,7 +236,7 @@ abstract class Request implements ArrayAccess, RequestContract
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->getAttribute($offset);
     }
@@ -247,11 +247,11 @@ abstract class Request implements ArrayAccess, RequestContract
      * @param  mixed  $offset
      * @param  mixed  $value
      *
-     * @return array
+     * @return void
      */
-    public function offsetSet($offset, $value): array
+    public function offsetSet($offset, $value): void
     {
-        return $this->setAttribute($offset, $value);
+        $this->setAttribute($offset, $value);
     }
 
     /**
@@ -278,23 +278,28 @@ abstract class Request implements ArrayAccess, RequestContract
      */
     protected function handleTinyMceContent(string $Hml): string
     {
-        return preg_replace('/(\.\.\/)+/i', "/", tidy_repair_string($Hml,
+        return preg_replace('/(\.\.\/)+/i', "/", tidy_repair_string(
+            $Hml,
             [
                 "output-xhtml"     => true,
                 "drop-empty-paras" => false,
                 "join-classes"     => true,
                 "show-body-only"   => true,
-            ], "utf8"));
-
+            ],
+            "utf8"
+        ));
     }
 
     function array_merge_default(array $sources, array $defaults): array
     {
-        return array_replace($defaults, array_intersect_key(
+        return array_replace(
+            $defaults,
+            array_intersect_key(
                 array_filter($sources, function ($value) {
                     return !is_null($value);
                 }),
-                $defaults)
+                $defaults
+            )
         );
     }
 }

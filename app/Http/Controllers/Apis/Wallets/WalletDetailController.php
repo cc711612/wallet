@@ -131,6 +131,7 @@ class WalletDetailController extends ApiController
                 return $this->response()->errorBadRequest("分攤成員有誤");
             }
         }
+
         try {
             $this->wallet_api_service
                 ->setRequest($requester->toArray())
