@@ -15,7 +15,7 @@ class AddFieldWalletDetailsDate extends Migration
     {
         Schema::table('wallet_details', function (Blueprint $table) {
             //
-            $table->boolean('date')->nullable()->comment('消費日期')->after('note');
+            $table->date('date')->nullable()->comment('消費日期')->after('note');
         });
     }
 
