@@ -37,6 +37,7 @@ class WalletDetailEntity extends Model
         'is_personal',
         'rates',
         'splits',
+        'date',
         'note',
         'select_all',
         'checkout_by',

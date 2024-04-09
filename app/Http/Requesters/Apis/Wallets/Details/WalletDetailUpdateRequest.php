@@ -32,6 +32,7 @@ class WalletDetailUpdateRequest extends Request
             'wallet_details.rates'                    => null,
             'wallet_details.splits'                   => [],
             'wallet_details.unit'                     => 'TWD',
+            'wallet_details.date'                     => Carbon::now()->toDateString(),
             'wallet_details.note'                     => 0,
             'wallet_details.updated_by'               => null,
             'wallet_details.updated_at'               => Carbon::now()->toDateTimeString(),
@@ -66,6 +67,7 @@ class WalletDetailUpdateRequest extends Request
             'wallet_details.is_personal'              => Arr::get($row, 'is_personal'),
             'wallet_details.unit'                     => Arr::get($row, 'unit'),
             'wallet_details.note'                     => Arr::get($row, 'note'),
+            'wallet_details.date'                     => Arr::get($row, 'date'),
             'wallet_details.updated_by'               => Arr::get(
                 $row,
                 sprintf("wallet_user.%s.id", Arr::get($row, 'wallet'))
