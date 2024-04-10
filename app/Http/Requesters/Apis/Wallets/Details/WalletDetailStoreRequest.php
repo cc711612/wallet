@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
+use Carbon\Carbon;
 
 class WalletDetailStoreRequest extends Request
 {
@@ -26,8 +27,9 @@ class WalletDetailStoreRequest extends Request
             'wallet_details.title'                    => null,
             'wallet_details.symbol_operation_type_id' => SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
             'wallet_details.select_all'               => 0,
-            'wallet_details.is_personal'               => 0,
+            'wallet_details.is_personal'              => 0,
             'wallet_details.value'                    => 0,
+            'wallet_details.date'                     => Carbon::now()->toDateString(),
             'wallet_details.unit'                     => 'TWD',
             'wallet_details.rates'                    => null,
             'wallet_details.splits'                   => [],
@@ -62,6 +64,7 @@ class WalletDetailStoreRequest extends Request
             'wallet_details.is_personal'               => Arr::get($row, 'is_personal'),
             'wallet_details.value'                    => Arr::get($row, 'value'),
             'wallet_details.unit'                     => Arr::get($row, 'unit'),
+            'wallet_details.date'                     => Arr::get($row, 'date'),
             'wallet_details.rates'                    => Arr::get($row, 'rates'),
             'wallet_details.splits'                   => Arr::get($row, 'splits'),
             'wallet_details.note'                     => Arr::get($row, 'note'),

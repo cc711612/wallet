@@ -116,7 +116,9 @@ class WalletApiService extends Service
                                     $subQuery
                                         ->where('is_personal', $this->getRequestByKey('wallet_details.is_personal'));
                                 });
-                        });
+                        })
+                        ->orderByDesc('date')
+                        ->orderByDesc('id');
                 },
                 WalletUserEntity::Table => function ($query) {
                     $query->select(['id', 'wallet_id', 'user_id', 'name', 'created_at', 'updated_at']);

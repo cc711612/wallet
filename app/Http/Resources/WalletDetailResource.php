@@ -68,6 +68,7 @@ class WalletDetailResource extends JsonResource
                         'is_personal'               => Arr::get($Detail, 'is_personal') ? true : false,
                         'value'                    => Arr::get($Detail, 'value', 0),
                         'unit'                     => Arr::get($Detail, 'unit'),
+                        'date'                     => Arr::get($Detail, 'date'),
                         'users'                    => $Users,
                         'checkout_by'              => Arr::get($Detail, 'checkout_by'),
                         'created_by'               => Arr::get($Detail, 'created_by'),
