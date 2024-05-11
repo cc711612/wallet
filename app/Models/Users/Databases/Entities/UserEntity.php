@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 03:07
@@ -39,6 +40,8 @@ class UserEntity extends Authenticatable
         'image',
         'password',
         'token',
+        'agent',
+        'ip',
         'created_at',
         'updated_at',
         'deleted_at',
