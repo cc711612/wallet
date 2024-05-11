@@ -41,7 +41,14 @@ class WalletUserApiService extends Service
         return app(WalletUserEntity::class);
     }
 
-    /**
+    public function  updateWalletUser()
+    {
+        return $this->getEntity()
+            ->where('id', $this->getRequestByKey('wallet_users.id'))
+            ->update($this->getRequestByKey('wallet_users'));
+    }
+
+    /** 
      * @return null
      * @Author: Roy
      * @DateTime: 2022/7/4 下午 06:49
@@ -175,7 +182,7 @@ class WalletUserApiService extends Service
             ->get();
     }
 
-    public function walletUserBindByUserId($userId, $jwtToken)
+    public function walletUserBindByUserId($userId, $jwtToken, $request = [])
     {
         $tokenPayload = JWT::decode($jwtToken, new Key(config('app.name'), 'HS256'));
         // toArray
@@ -192,6 +199,8 @@ class WalletUserApiService extends Service
                     is_null($walletUser->user_id)
                 ) {
                     $walletUser->user_id = $userId;
+                    $walletUser->agent = Arr::get($request, 'users.agent');
+                    $walletUser->ip = Arr::get($request, 'users.ip');
                     $walletUser->save();
                     return [
                         'status' => true,

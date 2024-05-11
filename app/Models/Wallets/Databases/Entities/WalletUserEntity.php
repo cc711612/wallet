@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Author: Roy
  * @DateTime: 2022/6/19 下午 03:36
@@ -28,6 +29,8 @@ class WalletUserEntity extends Model
         'user_id',
         'name',
         'token',
+        'agent',
+        'ip',
         'is_admin',
         'created_at',
         'updated_at',
@@ -39,9 +42,7 @@ class WalletUserEntity extends Model
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-
-    ];
+    protected $hidden = [];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -60,8 +61,12 @@ class WalletUserEntity extends Model
      */
     public function wallet_details()
     {
-        return $this->belongsToMany(WalletDetailEntity::class, 'wallet_detail_wallet_user', 'wallet_user_id',
-            'wallet_detail_id');
+        return $this->belongsToMany(
+            WalletDetailEntity::class,
+            'wallet_detail_wallet_user',
+            'wallet_user_id',
+            'wallet_detail_id'
+        );
     }
 
     /**
