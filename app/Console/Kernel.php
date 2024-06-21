@@ -18,6 +18,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('command:daily_update_exchange_rate')->hourly();
         $schedule->command('telescope:prune --hours=48')->daily();
         $schedule->command('cache:clear')->weeklyOn('4');
+        $schedule->command('backup:run --only-db --disable-notifications')->daily();
+        $schedule->command('backup:clean --disable-notifications')->daily();
     }
 
     /**

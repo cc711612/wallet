@@ -36,7 +36,7 @@ services:
         environment:
             - TZ=Asia/Taipei
     mysql:
-        image: mysql
+        image: mariadb
         container_name: ${PROJECT_NAME}-mysql
         volumes:
             - "./mysql/data:/var/lib/mysql"
