@@ -105,7 +105,7 @@ class LineController extends ApiController
             '記帳金額：100',
         ];
         $user->notify(new LineNotify(
-            implode("\r\n", $content)
+            implode("\r\n", $contents)
         ));
 
         return $this->response()->success();
