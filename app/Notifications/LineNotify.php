@@ -7,9 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Phattarachai\LineNotify\Facade\Line;
 
-class LineNotify extends Notification
+class LineNotify extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,6 +25,8 @@ class LineNotify extends Notification
     public function __construct(string $message)
     {
         $this->message = $message;
+        $this
+            ->onQueue('send_message');
     }
 
     /**

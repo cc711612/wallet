@@ -100,7 +100,7 @@ class LineController extends ApiController
         $contents = [
             '有一筆新的記帳資料',
             '帳本名稱：測試帳本',
-            '記帳日期：2022-09-10',
+            '記帳日期：' . now(),
             '記帳名稱：測試',
             '記帳金額：100',
         ];
