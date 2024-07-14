@@ -22,6 +22,7 @@ class UserEntity extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
+    use Notifiable;
 
     const Table = 'users';
     /**
@@ -39,6 +40,9 @@ class UserEntity extends Authenticatable
         'image',
         'password',
         'token',
+        'agent',
+        'ip',
+        'notify_token',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -101,5 +105,10 @@ class UserEntity extends Authenticatable
     public function wallet_users()
     {
         return $this->hasMany(WalletUserEntity::class, 'user_id', 'id');
+    }
+
+    public function routeNotificationForNotify($notification)
+    {
+        return $this->notify_token;
     }
 }

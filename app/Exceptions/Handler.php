@@ -74,8 +74,10 @@ class Handler extends ExceptionHandler
                 ], 401);
             }
 
-            $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
-
+            if (!config('app.debug')) {
+                $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
+            }
+            
             return response()->json([
                 'status'  => false,
                 'code'    => 500,
