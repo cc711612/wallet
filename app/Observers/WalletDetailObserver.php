@@ -43,13 +43,16 @@ class WalletDetailObserver
     {
         $walletId = $walletDetailEntity->wallet_id;
         $wallet = WalletEntity::find($walletId);
+
         $this->wallet_api_service->update(
             $walletDetailEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
-        $walletUsers = WalletUserEntity::where('wallet_id',$walletId)
+
+        $walletUsers = WalletUserEntity::where('wallet_id', $walletId)
             ->with(['users'])
             ->get();
+
         $walletUsers->each(function (WalletUserEntity $walletUser) use ($wallet, $walletDetailEntity) {
             if ($walletUser->users && $walletUser->users->notify_token) {
                 $user = $walletUser->users;
@@ -64,7 +67,7 @@ class WalletDetailObserver
                 LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
             }
         });
-        
+
         return $this->wallet_api_service->forgetDetailCache($walletDetailEntity->wallet_id);
     }
 

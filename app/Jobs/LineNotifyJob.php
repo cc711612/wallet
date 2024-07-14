@@ -51,9 +51,20 @@ class LineNotifyJob implements ShouldQueue
         try {
             $user = UserEntity::find($this->userId);
             $user->notify(new LineNotify($this->message));
+
+            Log::channel('bot')->info(
+                'Line Notify Success',
+                [
+                    'user_id' => $this->userId,
+                    'message' => $this->message
+                ]
+            );
         } catch (\Exception $exception) {
-            Log::channel('bot')->info(sprintf("%s Error params : %s", get_class($this),
-                json_encode($exception, JSON_UNESCAPED_UNICODE)));
+            Log::channel('bot')->error(sprintf(
+                "%s Error params : %s",
+                get_class($this),
+                json_encode($exception, JSON_UNESCAPED_UNICODE)
+            ));
         }
     }
 }

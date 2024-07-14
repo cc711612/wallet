@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Http;
+
 class LineController extends ApiController
 {
 
@@ -62,8 +63,8 @@ class LineController extends ApiController
         $params = [
             'grant_type' => 'authorization_code',
             'redirect_uri' => route('api.webhook.line.notify', ['userId' => $userId]),
-            'client_id' => env('LINE_NOTIFY_CLIENT'),
-            'client_secret' => env('LINE_NOTIFY_SECRET'),
+            'client_id' => config('services.line.notify_client_id'),
+            'client_secret' => config('services.line.notify_client_secret'),
             'code' => $code,
         ];
         $response = Http::asForm()->post('https://notify-bot.line.me/oauth/token', $params);
@@ -87,7 +88,7 @@ class LineController extends ApiController
         $bindUrl = 'https://notify-bot.line.me/oauth/authorize?response_type=code&scope=notify&response_mode=form_post&client_id={clientId}&redirect_uri={redirectUrl}&state={state}';
         $bindUrl = str_replace(
             ['{clientId}', '{redirectUrl}', '{state}'],
-            [env('LINE_NOTIFY_CLIENT'), route('api.webhook.line.notify', ['userId' => $request->user->id]), Str::uuid()],
+            [config('services.line.notify_client_id'), route('api.webhook.line.notify', ['userId' => $request->user->id]), Str::uuid()],
             $bindUrl
         );
 
