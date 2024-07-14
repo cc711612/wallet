@@ -8,8 +8,8 @@
 namespace App\Http\Controllers\Apis\Logs;
 
 use App\Http\Controllers\ApiController;
+use App\Jobs\LineNotifyJob;
 use App\Models\Users\Databases\Entities\UserEntity;
-use App\Notifications\LineNotify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -104,9 +104,8 @@ class LineController extends ApiController
             '記帳名稱：測試',
             '記帳金額：100',
         ];
-        $user->notify(new LineNotify(
-            implode("\r\n", $contents)
-        ));
+
+        LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
 
         return $this->response()->success();
     }

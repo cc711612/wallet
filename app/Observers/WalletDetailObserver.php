@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\LineNotifyJob;
 use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
@@ -59,9 +60,8 @@ class WalletDetailObserver
                     '記帳名稱：' . $walletDetailEntity->title,
                     '記帳金額：' . number_format($walletDetailEntity->value),
                 ];
-                $user->notify(new LineNotify(
-                    implode("\r\n", $contents)
-                ));
+                // notify
+                LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
             }
         });
         
