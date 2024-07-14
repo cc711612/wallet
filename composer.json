@@ -15,6 +15,7 @@
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.5",
         "linecorp/line-bot-sdk": "^7.6",
+        "phattarachai/line-notify": "^2.0",
         "predis/predis": "^2.0",
         "socialiteproviders/line": "^4.1"
     },

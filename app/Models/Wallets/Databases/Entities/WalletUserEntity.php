@@ -7,6 +7,7 @@
 
 namespace App\Models\Wallets\Databases\Entities;
 
+use App\Models\Users\Databases\Entities\UserEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -52,6 +53,16 @@ class WalletUserEntity extends Model
     public function wallets()
     {
         return $this->belongsTo(WalletEntity::class, 'wallet_id', 'id');
+    }
+
+     /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @Author: Roy
+     * @DateTime: 2022/6/28 上午 06:02
+     */
+    public function users()
+    {
+        return $this->belongsTo(UserEntity::class, 'user_id', 'id');
     }
 
     /**
