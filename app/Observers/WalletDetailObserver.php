@@ -50,7 +50,7 @@ class WalletDetailObserver
             ->with(['users'])
             ->get();
         $walletUsers->each(function (WalletUserEntity $walletUser) use ($wallet, $walletDetailEntity) {
-            if ($walletUser->users) {
+            if ($walletUser->users && $walletUser->users->notify_token) {
                 $user = $walletUser->users;
                 $contents = [
                     '有一筆新的記帳資料',
