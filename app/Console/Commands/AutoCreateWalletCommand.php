@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\ExchangeRates\Databases\Services\ExchangeRateService;
 use App\Models\Users\Databases\Services\UserApiService;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use Crypt;
@@ -29,16 +28,13 @@ class AutoCreateWalletCommand extends Command
     protected $description = '排程固定時間自動建立錢包';
 
     /**
-     * @var \App\Models\ExchangeRates\Databases\Services\ExchangeRateService
-     */
-    protected $exchangeRateService;
-    /**
      * Create a new command instance.
      *
      * @return void
      */
     public function __construct()
     {
+        parent::__construct();
     }
 
     public function handle()
@@ -62,12 +58,11 @@ class AutoCreateWalletCommand extends Command
         ];
 
         $jwt = JWT::encode($payload, $key, 'HS256');
-
         // 呼叫 API 建立錢包
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $jwt,
             'Accept' => 'application/json',
-        ])->post('http://yourdomain.com/api/wallets/store', [
+        ])->post(route('api.wallet.store'), [
             'user_id' => $userId,
             'code' => 'TWD',
             'title' => Carbon::now()->format('Y.m'),
