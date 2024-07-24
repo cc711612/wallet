@@ -17,7 +17,8 @@
         "linecorp/line-bot-sdk": "^7.6",
         "phattarachai/line-notify": "^2.0",
         "predis/predis": "^2.0",
-        "socialiteproviders/line": "^4.1"
+        "socialiteproviders/line": "^4.1",
+        "spatie/laravel-backup": "^7.8"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.12",

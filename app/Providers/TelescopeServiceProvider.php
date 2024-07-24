@@ -21,16 +21,11 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         $this->hideSensitiveRequestDetails();
 
         Telescope::filter(function (IncomingEntry $entry) {
-            return config('telescope.record.enabled');
-//            if ($this->app->environment('local')) {
-//                return true;
-//            }
-//
-//            return $entry->isReportableException() ||
-//                   $entry->isFailedRequest() ||
-//                   $entry->isFailedJob() ||
-//                   $entry->isScheduledTask() ||
-//                   $entry->hasMonitoredTag();
+            $blockUri = ['/api/auth/cache'];
+
+            return config('telescope.record.enabled')
+                && !in_array(request()->getRequestUri(), $blockUri)
+                && request()->method() != 'OPTIONS';
         });
     }
 
