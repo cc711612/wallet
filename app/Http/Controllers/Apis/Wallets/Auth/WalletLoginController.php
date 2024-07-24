@@ -41,7 +41,6 @@ class WalletLoginController extends Controller
     public function login(Request $request)
     {
         $requester = (new LoginRequest($request));
-
         $Wallet = (new WalletApiService())
             ->setRequest($requester->toArray())
             ->getWalletByCode();
@@ -65,9 +64,16 @@ class WalletLoginController extends Controller
                 'message' => $Validate->errors()->first(),
             ]);
         }
+
         $UserEntity = (new WalletUserApiService())
             ->setRequest($requester->toArray())
             ->getWalletUserByNameAndWalletId();
+
+        $requester->__set('wallet_users.id', $UserEntity->id);
+
+        app(WalletUserApiService::class)
+            ->setRequest($requester->toArray())
+            ->updateWalletUser();
 
         if (is_null($UserEntity)) {
             return response()->json([

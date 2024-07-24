@@ -39,6 +39,8 @@ return [
     'line'     => [
         'client_id'     => env('LINE_KEY'),
         'client_secret' => env('LINE_SECRET'),
+        'notify_client_id'     => env('LINE_NOTIFY_CLIENT'),
+        'notify_client_secret' => env('LINE_NOTIFY_SECRET'),
         'redirect'      => sprintf("%s%s", config('app.url'), env('LINE_REDIRECT_URI')),
     ],
 

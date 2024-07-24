@@ -21,6 +21,8 @@ class LoginRequest extends Request
             'wallets.code'           => null,
             'wallet_users.name'      => null,
             'wallet_users.wallet_id' => null,
+            'wallet_users.agent' => null,
+            'wallet_users.ip' => null,
         ];
     }
 
@@ -39,6 +41,8 @@ class LoginRequest extends Request
             'wallets.code'           => Arr::get($row, 'code'),
             'wallet_users.name'      => Arr::get($row, 'name'),
             'wallet_users.wallet_id' => Arr::get($row, 'wallet'),
+            'wallet_users.ip' => $row->ip(),
+            'wallet_users.agent' => $row->header('User-Agent'),
         ];
     }
 }

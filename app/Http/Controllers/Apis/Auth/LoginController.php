@@ -16,6 +16,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Resources\AuthResource;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use Cache;
+use Illuminate\Support\Arr;
 
 /**
  * Class LoginController
@@ -50,10 +51,15 @@ class LoginController extends ApiController
         }
         // 綁定
         if ($Requester->type == 'bind') {
-            $bind = app(WalletUserApiService::class)->walletUserBindByUserId(Auth::user()->id, $Requester->jwt_token);
+            $bind = app(WalletUserApiService::class)->walletUserBindByUserId(Auth::user()->id, $Requester->jwt_token, $Requester->toArray());
             if ($bind['status'] === false) {
                 return $this->response()->errorBadRequest($bind['message']);
             }
+        } else {
+            $user = Auth::user();
+            $user->agent = Arr::get($Requester->toArray(), 'users.agent');
+            $user->ip = Arr::get($Requester->toArray(), 'users.ip');
+            $user->save();
         }
 
         # set cache
