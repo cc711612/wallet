@@ -114,8 +114,8 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
 });
 Route::fallback(function () {
     return response([
-        'code'    => 400,
+        'code'    => 404,
         'status'  => false,
         'message' => '不支援此方法',
-    ]);
+    ], 404);
 });

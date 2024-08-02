@@ -22,7 +22,10 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         Telescope::filter(function (IncomingEntry $entry) {
             $blockUri = ['/api/auth/cache'];
-
+            
+            if ($entry->type === 'request' && $entry->content['response_status'] === 404) {
+                return false;
+            }
             return config('telescope.record.enabled')
                 && !in_array(request()->getRequestUri(), $blockUri)
                 && request()->method() != 'OPTIONS';
