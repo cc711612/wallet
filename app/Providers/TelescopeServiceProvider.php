@@ -21,11 +21,21 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         $this->hideSensitiveRequestDetails();
 
         Telescope::filter(function (IncomingEntry $entry) {
-            $blockUri = ['/api/auth/cache'];
+            $blockUri = [
+                '/api/auth/cache'
+            ];
+            $blockHttpStatus = [404, 405, 301, 302];
+            $host = request()->getHost();
             
-            if ($entry->type === 'request' && $entry->content['response_status'] === 404) {
+            // 檢查主機是否為 IP 地址
+            if (filter_var($host, FILTER_VALIDATE_IP)) {
                 return false;
             }
+
+            if ($entry->type === 'request' && in_array($entry->content['response_status'], $blockHttpStatus)) {
+                return false;
+            }
+            
             return config('telescope.record.enabled')
                 && !in_array(request()->getRequestUri(), $blockUri)
                 && request()->method() != 'OPTIONS';
