@@ -2,13 +2,14 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Throwable;
 use App\Traits\LineMessageTrait;
+use DomainException;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Throwable;
 use UnexpectedValueException;
-use DomainException;
 
 class Handler extends ExceptionHandler
 {
@@ -61,26 +62,36 @@ class Handler extends ExceptionHandler
 
             if (
                 $e instanceof SignatureInvalidException ||
-                $e instanceof \Firebase\JWT\ExpiredException ||
-                $e instanceof \Firebase\JWT\BeforeValidException ||
+                $e instanceof \Firebase\JWT\ExpiredException  ||
+                $e instanceof \Firebase\JWT\BeforeValidException  ||
                 $e instanceof UnexpectedValueException ||
                 $e instanceof DomainException ||
                 $e instanceof AuthorizationException
             ) {
                 return response()->json([
-                    'status'  => false,
-                    'code'    => 401,
+                    'status' => false,
+                    'code' => 401,
                     'message' => '認證錯誤',
                 ], 401);
+            }
+
+            if (
+                $e instanceof HttpResponseException
+            ) {
+                return response()->json([
+                    'status' => false,
+                    'code' => 404,
+                    'message' => '請求錯誤',
+                ], 404);
             }
 
             if (!config('app.debug')) {
                 $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
             }
-            
+
             return response()->json([
-                'status'  => false,
-                'code'    => 500,
+                'status' => false,
+                'code' => 500,
                 'message' => 'Server Errors',
                 'details' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
