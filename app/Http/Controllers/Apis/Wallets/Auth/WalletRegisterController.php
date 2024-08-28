@@ -6,10 +6,12 @@
 
 namespace App\Http\Controllers\Apis\Wallets\Auth;
 
+use App\Http\Controllers\ApiController;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Http\Requesters\Apis\Wallets\Auth\RegisterRequest;
+use App\Http\Requests\RegisterBatchRequest;
 use App\Http\Validators\Apis\Wallets\Auth\RegisterValidator;
 use function response;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
@@ -25,7 +27,7 @@ use App\Jobs\WalletUserRegister;
  * @Author: Roy
  * @DateTime: 2022/6/21 下午 12:05
  */
-class WalletRegisterController extends Controller
+class WalletRegisterController extends ApiController
 {
     use WalletUserAuthLoginTrait;
 
@@ -89,5 +91,22 @@ class WalletRegisterController extends Controller
                 ],
             ],
         ]);
+    }
+
+    public function registerBatch(RegisterBatchRequest $request)
+    {
+        /**
+         * @var WalletApiService $walletApiService
+         */
+        $walletApiService = app(WalletApiService::class);
+        try {
+            $walletApiService->batchInsertWalletUserByWalletId(
+                $request->wallet_id,
+                $request->name
+            );
+        } catch (\Exception $e) {
+            return $this->response()->errorBadRequest($e->getMessage());
+        }
+        return $this->response()->success();
     }
 }

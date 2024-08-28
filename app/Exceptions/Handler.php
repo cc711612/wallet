@@ -85,6 +85,14 @@ class Handler extends ExceptionHandler
                 ], 404);
             }
 
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return response()->json([
+                    'status' => false,
+                    'code' => 400,
+                    'message' => $e->errors(),
+                ], 400);
+            }
+
             if (!config('app.debug')) {
                 $this->sendMessage(sprintf("url : %s ,messages : %s", $request->getUri(), $e->getMessage()));
             }

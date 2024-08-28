@@ -8,6 +8,7 @@
 namespace App\Models\Wallets\Databases\Services;
 
 use App\Concerns\Databases\Service;
+use App\Jobs\WalletUserRegister;
 use App\Models\ExchangeRates\Databases\Services\ExchangeRateService;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Str;
 
 class WalletApiService extends Service
 {
@@ -217,6 +219,31 @@ class WalletApiService extends Service
             }
             $this->forgetCache(Arr::get($Entity, 'code'));
             return $Entity->wallet_users()->create($this->getRequestByKey('wallet_users'));
+        });
+    }
+
+    public function batchInsertWalletUserByWalletId(int $walletId, array $names)
+    {
+        return DB::transaction(function () use ($walletId, $names) {
+            $inserts = [];
+            foreach ($names as $name) {
+                $inserts[] = [
+                    'wallet_id' => $walletId,
+                    'name' => $name,
+                    'token' => Str::random(12),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            WalletUserEntity::insert($inserts);
+            $entity = $this->getEntity()
+                ->find($walletId);
+            $this->forgetCache(Arr::get($entity, 'code'));
+            WalletUserRegister::dispatch(
+                [
+                    'wallet'       => $entity,
+                ]
+            );
         });
     }
 

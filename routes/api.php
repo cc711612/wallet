@@ -49,6 +49,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
             Route::name("login")->post("/login", [WalletLoginController::class, 'login']);
             Route::name("login.token")->post("/login/token", [WalletLoginController::class, 'token']);
             Route::name("register")->post("/register", [WalletRegisterController::class, 'register']);
+            Route::name("register.batch")->post("/register/batch", [WalletRegisterController::class, 'registerBatch']);
         });
     });
     # Webhook
