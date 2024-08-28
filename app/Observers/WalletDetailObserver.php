@@ -49,24 +49,27 @@ class WalletDetailObserver
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
 
-        $walletUsers = WalletUserEntity::where('wallet_id', $walletId)
-            ->with(['users'])
-            ->get();
+        // 非個人記帳
+        if (!$walletDetailEntity->is_personal) {
+            $walletUsers = WalletUserEntity::where('wallet_id', $walletId)
+                ->with(['users'])
+                ->get();
 
-        $walletUsers->each(function (WalletUserEntity $walletUser) use ($wallet, $walletDetailEntity) {
-            if ($walletUser->users && $walletUser->users->notify_token) {
-                $user = $walletUser->users;
-                $contents = [
-                    '有一筆新的記帳資料',
-                    '帳本名稱：' . $wallet->title,
-                    '記帳日期：' . $walletDetailEntity->date,
-                    '記帳名稱：' . $walletDetailEntity->title,
-                    '記帳金額：' . number_format($walletDetailEntity->value),
-                ];
-                // notify
-                LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
-            }
-        });
+            $walletUsers->each(function (WalletUserEntity $walletUser) use ($wallet, $walletDetailEntity) {
+                if ($walletUser->users && $walletUser->users->notify_token) {
+                    $user = $walletUser->users;
+                    $contents = [
+                        '有一筆新的記帳資料',
+                        '帳本名稱：' . $wallet->title,
+                        '記帳日期：' . $walletDetailEntity->date,
+                        '記帳名稱：' . $walletDetailEntity->title,
+                        '記帳金額：' . number_format($walletDetailEntity->value),
+                    ];
+                    // notify
+                    LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
+                }
+            });
+        }
 
         return $this->wallet_api_service->forgetDetailCache($walletDetailEntity->wallet_id);
     }
