@@ -46,8 +46,15 @@ class VerifyWalletMemberApi
             // 帳簿使用者
             if (!empty($tokenPayload['wallet_user']['id'])) {
                 $userId = Crypt::decryptString($tokenPayload['wallet_user']['id']);
-                $user = app(WalletUserApiService::class)->getWalletUserByWalletUserId($userId);
+                /**
+                 * @var WalletUserApiService $walletUserApiService
+                 */
+                $walletUserApiService = app(WalletUserApiService::class);
+                $user = $walletUserApiService->getWalletUserByWalletUserId($userId);
                 if ($user->isNotEmpty()) {
+                    $user->each(function ($item) {
+                        $item->touch();
+                    });
                     $request->merge([
                         'wallet_user' => $user->keyBy('wallet_id'),
                     ]);
