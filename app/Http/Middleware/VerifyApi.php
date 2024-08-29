@@ -45,7 +45,9 @@ class VerifyApi
                 $userId = Crypt::decryptString($tokenPayload['user']['id']);
                 $user = app(UserApiService::class)->find($userId);
                 if ($user) {
-                    $user->touch();
+                    $user->agent = $request->header('User-Agent');
+                    $user->ip = $request->ip();
+                    $user->save();
                     $request->merge([
                         'user' => $user,
                     ]);

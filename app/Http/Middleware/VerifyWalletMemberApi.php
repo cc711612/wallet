@@ -4,12 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Models\Users\Databases\Services\UserApiService;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Crypt;
+use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class VerifyWalletMemberApi
 {
@@ -52,8 +52,10 @@ class VerifyWalletMemberApi
                 $walletUserApiService = app(WalletUserApiService::class);
                 $user = $walletUserApiService->getWalletUserByWalletUserId($userId);
                 if ($user->isNotEmpty()) {
-                    $user->each(function ($item) {
-                        $item->touch();
+                    $user->each(function ($item) use ($request) {
+                        $item->agent = $request->header('User-Agent');
+                        $item->ip = $request->ip();
+                        $item->save();
                     });
                     $request->merge([
                         'wallet_user' => $user->keyBy('wallet_id'),
@@ -67,20 +69,20 @@ class VerifyWalletMemberApi
 
         if ($member_token == null) {
             return response()->json([
-                'status'  => false,
-                'code'    => 401,
+                'status' => false,
+                'code' => 401,
                 'message' => '請帶入 member_token',
-                'data'    => [],
+                'data' => [],
             ], 401);
         }
 
         if ($this->checkToken($member_token) === false) {
             Log::channel('token')->info(sprintf("Verify token is empty info : %s ", $request->member_token));
             return response()->json([
-                'status'  => false,
-                'code'    => 401,
+                'status' => false,
+                'code' => 401,
                 'message' => "請重新登入",
-                'data'    => [],
+                'data' => [],
             ], 401);
         }
         # 取得快取資料
