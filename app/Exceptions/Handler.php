@@ -8,6 +8,7 @@ use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 use UnexpectedValueException;
@@ -80,6 +81,8 @@ class Handler extends ExceptionHandler
                 $e instanceof HttpResponseException
                 ||
                 $e instanceof NotFoundHttpException
+                ||
+                $e instanceof MethodNotAllowedHttpException
             ) {
                 return response()->json([
                     'status' => false,
