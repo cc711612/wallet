@@ -21,15 +21,15 @@ class SendLineMessage implements ShouldQueue
     /**
      * @var
      */
-    private $user_ids;
+    private $userIds; // 修改為小駝峰
     /**
      * @var
      */
-    private $message;
+    private $message; // 保持不變
     /**
      * @var
      */
-    private $params;
+    private $params; // 保持不變
 
     /**
      * Create a new job instance.
@@ -41,11 +41,11 @@ class SendLineMessage implements ShouldQueue
         //
         $this
             ->onQueue('send_message');
-        $UserIds = config('bot.line.admin_user_ids');
+        $userIds = config('bot.line.admin_user_ids'); // 修改為小駝峰
         if (is_null(Arr::get($params, 'user_id')) === false) {
-            $UserIds = array_push($UserIds, Arr::get($params, 'user_id'));
+            $userIds = array_push($userIds, Arr::get($params, 'user_id')); // 修改為小駝峰
         }
-        $this->user_ids = $UserIds;
+        $this->userIds = $userIds; // 修改為小駝峰
         $this->message = Arr::get($params, 'message');
         $this->params = $params;
     }
@@ -67,9 +67,9 @@ class SendLineMessage implements ShouldQueue
              * "pictureUrl" => "https://sprofile.line-scdn.net/0hE0DiZsyUGh9pEDa-y8xkYBlAGXVKYUMNQ3YCLFtCTXtRKQ8cTCVQfg4QTSkAIg0aEHZcKVsZFy1lA215d0bmK24gRChQJ1VNQ35T_g"
              * "language" => "zh-TW"
              */
-            foreach ($this->user_ids as $user_id) {
-                $user_info = $this->jsonToArray($bot->getProfile($user_id)->getRawBody());
-                $bot->pushMessage($user_id,
+            foreach ($this->userIds as $userId) { // 修改為小駝峰
+                $user_info = $this->jsonToArray($bot->getProfile($userId)->getRawBody()); // 修改為小駝峰
+                $bot->pushMessage($userId, // 修改為小駝峰
                     new TextMessageBuilder(sprintf("%s 您好 網站發生錯誤:\n%s", Arr::get($user_info, 'displayName'),
                         $this->message)));
                 Log::channel('bot')->info(sprintf("%s SUCCESS params : %s", get_class($this),

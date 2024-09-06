@@ -22,14 +22,14 @@ class WalletDetailObserver
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
-    private $wallet_api_service;
+    private $walletApiService;
 
     /**
-     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $WalletApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
      */
-    public function __construct(WalletApiService $WalletApiService)
+    public function __construct(WalletApiService $walletApiService)
     {
-        $this->wallet_api_service = $WalletApiService;
+        $this->walletApiService = $walletApiService;
     }
 
     /**
@@ -44,7 +44,7 @@ class WalletDetailObserver
         $walletId = $walletDetailEntity->wallet_id;
         $wallet = WalletEntity::find($walletId);
 
-        $this->wallet_api_service->update(
+        $this->walletApiService->update(
             $walletDetailEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
@@ -71,7 +71,7 @@ class WalletDetailObserver
             });
         }
 
-        return $this->wallet_api_service->forgetDetailCache($walletDetailEntity->wallet_id);
+        return $this->walletApiService->forgetDetailCache($walletDetailEntity->wallet_id);
     }
 
     /**
@@ -84,11 +84,11 @@ class WalletDetailObserver
     public function updated(WalletDetailEntity $walletDetailEntity)
     {
         //
-        $this->wallet_api_service->update(
+        $this->walletApiService->update(
             $walletDetailEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
-        return $this->wallet_api_service->forgetDetailCache($walletDetailEntity->wallet_id);
+        return $this->walletApiService->forgetDetailCache($walletDetailEntity->wallet_id);
     }
 
     /**

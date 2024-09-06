@@ -38,15 +38,15 @@ class RegisterController extends ApiController
     {
         $requester = (new RegisterRequest($request));
 
-        $Validate = (new RegisterValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new RegisterValidator($requester))->validate(); // 變數名稱修正
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
-        $UserEntity = (new UserApiService())
-            ->create(Arr::get($requester, 'users'));
+        $userEntity = (new UserApiService())
+            ->create(Arr::get($requester, 'users')); // 變數名稱修正
 
-        if (is_null($UserEntity)) {
+        if (is_null($userEntity)) {
             return $this->response()->fail('新增失敗');
         }
 
@@ -57,7 +57,7 @@ class RegisterController extends ApiController
             return $this->response()->errorBadRequest("註冊登入失敗");
         }
         # set cache
-        $this->MemberTokenCache();
+        $this->memberTokenCache(); // 變數名稱修正
 
         return $this->response()->success(
             (new AuthResource(Auth::user()))

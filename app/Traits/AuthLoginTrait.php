@@ -44,16 +44,16 @@ trait AuthLoginTrait
             $user->token = $token;
             $cache = Cache::add(sprintf(config('cache_key.api.member_token'), $token), Auth::user(),
                 config('app.login_timeout'));
-            $cache_wallet_user = Cache::add(sprintf(config('cache_key.api.wallet_member_token'), $token),
+            $cacheWalletUser = Cache::add(sprintf(config('cache_key.api.wallet_member_token'), $token),
                 Auth::user()->wallet_users()->get()->keyBy('wallet_id'),
                 config('app.login_timeout'));
             # Log
-            if ($cache === true && $cache_wallet_user === true) {
+            if ($cache === true && $cacheWalletUser === true) {
                 Log::channel('token')->info(sprintf("Login info : %s ", json_encode([
-                    'user_id'   => $user->id,
-                    'cache_key' => sprintf(config('cache_key.api.member_token'), $token),
-                    'token'     => $token,
-                    'end_time'  => Carbon::now()->addSeconds(config('app.login_timeout'))->toDateTimeString(),
+                    'userId'   => $user->id,
+                    'cacheKey' => sprintf(config('cache_key.api.member_token'), $token),
+                    'token'    => $token,
+                    'endTime'  => Carbon::now()->addSeconds(config('app.login_timeout'))->toDateTimeString(),
                 ])));
             };
             $user->wallet_users()->update([

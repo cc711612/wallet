@@ -25,24 +25,24 @@ class WalletUserObserver
     private $wallet_api_service;
 
     /**
-     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $WalletApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
      */
-    public function __construct(WalletApiService $WalletApiService)
+    public function __construct(WalletApiService $walletApiService)
     {
-        $this->wallet_api_service = $WalletApiService;
+        $this->walletApiService = $walletApiService;
     }
 
     /**
-     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $WalletUserEntity
+     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $walletUserEntity
      *
      * @Author: Roy
      * @DateTime: 2022/7/16 下午 05:08
      */
-    public function created(WalletUserEntity $WalletUserEntity)
+    public function created(WalletUserEntity $walletUserEntity)
     {
         //
-        return $this->wallet_api_service->update(
-            $WalletUserEntity->wallet_id,
+        return $this->walletApiService->update(
+            $walletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
     }
@@ -50,20 +50,20 @@ class WalletUserObserver
     /**
      * Handle the WalletUserEntity "updated" event.
      *
-     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $WalletUserEntity
+     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $walletUserEntity
      *
      * @return void
      */
-    public function updated(WalletUserEntity $WalletUserEntity)
+    public function updated(WalletUserEntity $walletUserEntity)
     {
-        if ($WalletUserEntity->deleted_at) {
-            app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
+        if ($walletUserEntity->deleted_at) {
+            app(WalletUserApiService::class)->forgetCacheByWalletUser($walletUserEntity);
         }
 
-        $this->forgetWalletUsersCache($WalletUserEntity);
+        $this->forgetWalletUsersCache($walletUserEntity);
 
-        return $this->wallet_api_service->update(
-            $WalletUserEntity->wallet_id,
+        return $this->walletApiService->update(
+            $walletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
     }
@@ -71,29 +71,29 @@ class WalletUserObserver
     /**
      * Handle the WalletUserEntity "deleted" event.
      *
-     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $WalletUserEntity
+     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $walletUserEntity
      *
      * @return void
      */
-    public function deleted(WalletUserEntity $WalletUserEntity)
+    public function deleted(WalletUserEntity $walletUserEntity)
     {
         //
-        $this->wallet_api_service->update(
-            $WalletUserEntity->wallet_id,
+        $this->walletApiService->update(
+            $walletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
-        app(WalletUserApiService::class)->forgetCacheByWalletUser($WalletUserEntity);
-        $this->forgetWalletUsersCache($WalletUserEntity);
+        app(WalletUserApiService::class)->forgetCacheByWalletUser($walletUserEntity);
+        $this->forgetWalletUsersCache($walletUserEntity);
     }
 
     /**
      * Handle the WalletUserEntity "restored" event.
      *
-     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $WalletUserEntity
+     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $walletUserEntity
      *
      * @return void
      */
-    public function restored(WalletUserEntity $WalletUserEntity)
+    public function restored(WalletUserEntity $walletUserEntity)
     {
         //
     }
@@ -101,21 +101,21 @@ class WalletUserObserver
     /**
      * Handle the WalletUserEntity "force deleted" event.
      *
-     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $WalletUserEntity
+     * @param  \App\Models\Wallets\Databases\Entities\WalletUserEntity  $walletUserEntity
      *
      * @return void
      */
-    public function forceDeleted(WalletUserEntity $WalletUserEntity)
+    public function forceDeleted(WalletUserEntity $walletUserEntity)
     {
         //
     }
 
-    public function forgetWalletUsersCache(WalletUserEntity $WalletUserEntity)
+    public function forgetWalletUsersCache(WalletUserEntity $walletUserEntity)
     {
-        $wallet = $WalletUserEntity->wallets()->first();
+        $wallet = $walletUserEntity->wallets()->first();
         if ($wallet) {
             app(WalletApiService::class)->forgetWalletUsersCache($wallet->code);
         }
-        app(UserApiService::class)->forgetFindCache($WalletUserEntity->user_id);
+        app(UserApiService::class)->forgetFindCache($walletUserEntity->user_id);
     }
 }

@@ -40,9 +40,9 @@ class WalletUserRegister implements ShouldQueue
     {
         //
         try {
-            $wallet_id = Arr::get($this->params, 'wallet.id');
-            $Wallet = (new WalletDetailJobService())
-                ->updateAllSelectedWalletDetails($wallet_id);
+            $walletId = Arr::get($this->params, 'wallet.id'); // 變數名稱修正
+            $wallet = (new WalletDetailJobService())
+                ->updateAllSelectedWalletDetails($walletId); // 變數名稱修正
             Log::channel('job')->info(sprintf("%s success params : %s", get_class($this),
                 json_encode($this->params, JSON_UNESCAPED_UNICODE)));
         } catch (\Exception $exception) {

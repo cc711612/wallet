@@ -35,29 +35,29 @@ class WalletDetailController extends ApiController
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
-    private $wallet_api_service;
+    private $walletApiService;
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletDetailApiService
      */
-    private $wallet_detail_api_service;
+    private $walletDetailApiService;
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletUserApiService
      */
-    private $wallet_user_api_service;
+    private $walletUserApiService;
 
     /**
-     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $WalletApiService
-     * @param  \App\Models\Wallets\Databases\Services\WalletDetailApiService  $WalletDetailApiService
-     * @param  \App\Models\Wallets\Databases\Services\WalletUserApiService  $WalletUserApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletDetailApiService  $walletDetailApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletUserApiService  $walletUserApiService
      */
     public function __construct(
-        WalletApiService $WalletApiService,
-        WalletDetailApiService $WalletDetailApiService,
-        WalletUserApiService $WalletUserApiService
+        WalletApiService $walletApiService,
+        WalletDetailApiService $walletDetailApiService,
+        WalletUserApiService $walletUserApiService
     ) {
-        $this->wallet_api_service = $WalletApiService;
-        $this->wallet_detail_api_service = $WalletDetailApiService;
-        $this->wallet_user_api_service = $WalletUserApiService;
+        $this->walletApiService = $walletApiService;
+        $this->walletDetailApiService = $walletDetailApiService;
+        $this->walletUserApiService = $walletUserApiService;
     }
 
     /**
@@ -71,21 +71,21 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailIndexRequest($request));
 
-        $Validate = (new WalletDetailIndexValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailIndexValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
-        $Wallet = $this->wallet_api_service
+        $wallet = $this->walletApiService
             ->setRequest($requester->toArray())
             ->getWalletWithDetail();
 
-        if (is_null($Wallet)) {
+        if (is_null($wallet)) {
             return $this->response()->fail("系統錯誤，請重新整理");
         }
 
         return $this->response()->success(
-            (new WalletDetailResource($Wallet))
+            (new WalletDetailResource($wallet))
                 ->index()
         );
     }
@@ -101,9 +101,9 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailStoreRequest($request));
 
-        $Validate = (new WalletDetailStoreValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailStoreValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
         if (
@@ -114,7 +114,7 @@ class WalletDetailController extends ApiController
             ) == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
         ) {
             # 公費 & 減項 需檢查公費額度
-            $walletBalance = $this->wallet_detail_api_service
+            $walletBalance = $this->walletDetailApiService
                 ->getWalletBalance(Arr::get($requester, 'wallets.id'));
             if ($walletBalance - Arr::get($requester, 'wallet_details.value') < 0) {
                 return $this->response()->errorBadRequest("公費結算金額不得為負數");
@@ -123,17 +123,17 @@ class WalletDetailController extends ApiController
 
         if (Arr::get($requester, 'wallet_details.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
             # 驗證users
-            $ValidateWalletUsers = $this->wallet_user_api_service
+            $validateWalletUsers = $this->walletUserApiService
                 ->setRequest($requester->toArray())
                 ->validateWalletUsers();
 
-            if ($ValidateWalletUsers === false) {
+            if ($validateWalletUsers === false) {
                 return $this->response()->errorBadRequest("分攤成員有誤");
             }
         }
 
         try {
-            $this->wallet_api_service
+            $this->walletApiService
                 ->setRequest($requester->toArray())
                 ->createWalletDetail();
         } catch (\Exception $exception) {
@@ -153,9 +153,9 @@ class WalletDetailController extends ApiController
     public function update(Request $request)
     {
         $requester = (new WalletDetailUpdateRequest($request));
-        $Validate = (new WalletDetailUpdateValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailUpdateValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
         if (
             Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
@@ -165,42 +165,42 @@ class WalletDetailController extends ApiController
             ) == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT
         ) {
             # 公費 & 減項 需檢查公費額度
-            $Details = $this->wallet_detail_api_service
+            $details = $this->walletDetailApiService
                 ->getPublicDetailByWalletId(Arr::get($requester, 'wallets.id'));
-            $before_detail_value = 0;
+            $beforeDetailValue = 0;
             # 更新前為公帳細項
-            $UpdateDetail = $Details->keyBy('id')->get(Arr::get($requester, 'wallet_details.id'));
-            if (is_null($UpdateDetail) === false) {
-                $before_detail_value = $UpdateDetail->value;
-                if ($UpdateDetail->symbol_operation_type_id == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT) {
-                    $before_detail_value = 0 - $UpdateDetail->value;
+            $updateDetail = $details->keyBy('id')->get(Arr::get($requester, 'wallet_details.id'));
+            if (is_null($updateDetail) === false) {
+                $beforeDetailValue = $updateDetail->value;
+                if ($updateDetail->symbol_operation_type_id == SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT) {
+                    $beforeDetailValue = 0 - $updateDetail->value;
                 }
             }
-            $DetailGroupBySymbol = $Details->groupBy('symbol_operation_type_id');
-            $total = $DetailGroupBySymbol->get(
+            $detailGroupBySymbol = $details->groupBy('symbol_operation_type_id');
+            $total = $detailGroupBySymbol->get(
                 SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
                 collect([])
-            )->sum('value') - $DetailGroupBySymbol->get(
+            )->sum('value') - $detailGroupBySymbol->get(
                 SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT,
                 collect([])
             )->sum('value');
             # 檢查公帳負數問題
-            if ($total + $before_detail_value - Arr::get($requester, 'wallet_details.value') < 0) {
+            if ($total + $beforeDetailValue - Arr::get($requester, 'wallet_details.value') < 0) {
                 return $this->response()->errorBadRequest("公費結算金額不得為負數");
             }
         }
         if (Arr::get($requester, 'wallet_details.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
             # 驗證users
-            $ValidateWalletUsers = $this->wallet_user_api_service
+            $validateWalletUsers = $this->walletUserApiService
                 ->setRequest($requester->toArray())
                 ->validateWalletUsers();
-            if ($ValidateWalletUsers === false) {
+            if ($validateWalletUsers === false) {
                 return $this->response()->errorBadRequest("分攤成員有誤");
             }
         }
 
         try {
-            $this->wallet_detail_api_service
+            $this->walletDetailApiService
                 ->setRequest($requester->toArray())
                 ->updateWalletDetail();
         } catch (\Exception $exception) {
@@ -220,16 +220,16 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailShowRequest($request));
 
-        $Detail = $this->wallet_detail_api_service
+        $detail = $this->walletDetailApiService
             ->setRequest($requester->toArray())
             ->findDetail();
 
         # 認證
-        if (is_null($Detail) === true) {
+        if (is_null($detail) === true) {
             return $this->response()->errorBadRequest("參數有誤");
         }
         return $this->response()->success(
-            (new WalletDetailResource($Detail))
+            (new WalletDetailResource($detail))
                 ->show($requester->toArray())
         );
     }
@@ -245,17 +245,17 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailDestroyRequest($request));
 
-        $Validate = (new WalletDetailDestroyValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailDestroyValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
-        $Detail = $this->wallet_detail_api_service
+        $detail = $this->walletDetailApiService
             ->find(Arr::get($requester, 'wallet_details.id'));
 
-        if (is_null($Detail) === true) {
+        if (is_null($detail) === true) {
             return $this->response()->errorBadRequest("參數有誤");
         }
-        if ($Detail->created_by != Arr::get($requester, 'wallet_users.id') && Arr::get(
+        if ($detail->created_by != Arr::get($requester, 'wallet_users.id') && Arr::get(
             $requester,
             'wallet_user.is_admin'
         ) != 1) {
@@ -263,7 +263,7 @@ class WalletDetailController extends ApiController
         }
         try {
             # 刪除
-            $Detail->update(Arr::get($requester, 'wallet_details'));
+            $detail->update(Arr::get($requester, 'wallet_details'));
         } catch (\Exception $exception) {
             return $this->response()->fail(json_encode($exception));
         }
@@ -281,13 +281,13 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailCheckoutRequest($request));
 
-        $Validate = (new WalletDetailCheckoutValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailCheckoutValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
         try {
 
-            $this->wallet_detail_api_service
+            $this->walletDetailApiService
                 ->setRequest($requester->toArray())
                 ->checkoutWalletDetails();
         } catch (\Exception $exception) {
@@ -308,14 +308,14 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailUncheckoutRequest($request));
 
-        $Validate = (new WalletDetailUncheckoutValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletDetailUncheckoutValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
         try {
 
-            $this->wallet_detail_api_service
+            $this->walletDetailApiService
                 ->setRequest($requester->toArray())
                 ->unCheckoutWalletDetails();
         } catch (\Exception $exception) {

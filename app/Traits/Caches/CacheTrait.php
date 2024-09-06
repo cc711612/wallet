@@ -37,11 +37,11 @@ trait CacheTrait
      */
     public function forgetCache($code)
     {
-        $CacheKey = sprintf($this->getCacheKeyFormat(), $code);
+        $cacheKey = sprintf($this->getCacheKeyFormat(), $code);
         # Cache
 
-        if (Cache::has($CacheKey) === true) {
-            return Cache::forget($CacheKey);
+        if (Cache::has($cacheKey) === true) {
+            return Cache::forget($cacheKey);
         }
         return false;
     }
@@ -65,11 +65,11 @@ trait CacheTrait
      */
     public function forgetDetailCache($id)
     {
-        $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $id);
+        $cacheKey = sprintf($this->getDetailCacheKeyFormat(), $id);
         # Cache
 
-        if (Cache::has($CacheKey) === true) {
-            return Cache::forget($CacheKey);
+        if (Cache::has($cacheKey) === true) {
+            return Cache::forget($cacheKey);
         }
         return false;
     }

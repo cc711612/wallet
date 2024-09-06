@@ -50,11 +50,11 @@ class WalletApiService extends Service
      */
     public function paginate(): LengthAwarePaginator
     {
-        $page_count = $this->getPageCount();
+        $pageCount = $this->getPageCount();
 
         # 一頁幾個
         if (is_null($this->getRequestByKey('per_page')) === false) {
-            $page_count = $this->getRequestByKey('per_page');
+            $pageCount = $this->getRequestByKey('per_page');
         }
         $walletIds = [];
         if ($this->getRequestByKey('wallets.is_guest')) {
@@ -63,7 +63,7 @@ class WalletApiService extends Service
 
             $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
         }
-        $Result = $this->getEntity()
+        $result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
                     $query->select(['id', 'name']);
@@ -80,9 +80,9 @@ class WalletApiService extends Service
             })
             ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
 
-        return $Result
+        return $result
             ->orderByDesc('updated_at')
-            ->paginate($page_count);
+            ->paginate($pageCount);
     }
 
     /**
@@ -95,13 +95,8 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('wallets.id'))) {
             return null;
         }
-        // $CacheKey = sprintf($this->getDetailCacheKeyFormat(), $this->getRequestByKey('wallets.id'));
-        // # Cache
-        // if (Cache::has($CacheKey) === true) {
-        //     return Cache::get($CacheKey);
-        // }
 
-        $Result = $this->getEntity()
+        $result = $this->getEntity()
             ->with([
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail
@@ -128,7 +123,7 @@ class WalletApiService extends Service
             ])
             ->find($this->getRequestByKey('wallets.id'));
 
-        $createTimes = $Result->wallet_details
+        $createTimes = $result->wallet_details
             ->pluck('created_at')
             ->map(function ($item) {
                 return $item->format('Y-m-d');
@@ -138,16 +133,14 @@ class WalletApiService extends Service
 
         $exchangeRateService = app(ExchangeRateService::class);
         $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
-        $Result->wallet_details = $Result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
+        $result->wallet_details = $result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
             $walletDetail->exchange_rates = $exchangeRates
                 ->get($walletDetail->created_at->format('Y-m-d'), collect([]))
                 ->values();
             return $walletDetail;
         });
 
-        // Cache::add($CacheKey, $Result, 3600);
-
-        return $Result;
+        return $result;
     }
 
     /**
@@ -157,21 +150,21 @@ class WalletApiService extends Service
      */
     public function getWalletWithUserByCode()
     {
-        $CacheKey = sprintf($this->getCacheKeyFormat(), $this->getRequestByKey('wallets.code'));
+        $cacheKey = sprintf($this->getCacheKeyFormat(), $this->getRequestByKey('wallets.code'));
         # Cache
 
-        if (Cache::has($CacheKey) === true) {
-            return Cache::get($CacheKey);
+        if (Cache::has($cacheKey) === true) {
+            return Cache::get($cacheKey);
         }
-        $Result = $this->getEntity()
+        $result = $this->getEntity()
             ->with([
                 WalletUserEntity::Table,
             ])
             ->where('code', $this->getRequestByKey('wallets.code'))
             ->first();
 
-        Cache::add($CacheKey, $Result, 3600);
-        return $Result;
+        Cache::add($cacheKey, $result, 3600);
+        return $result;
     }
 
     public function forgetWalletUsersCache($walletCode = null)
@@ -194,11 +187,11 @@ class WalletApiService extends Service
     public function createWalletWithUser()
     {
         return DB::transaction(function () {
-            $Entity = $this->getEntity()
+            $entity = $this->getEntity()
                 ->create($this->getRequestByKey('wallets'));
-            $Entity->wallet_users()->create($this->getRequestByKey('wallet_users'));
+            $entity->wallet_users()->create($this->getRequestByKey('wallet_users'));
             $this->updateWalletUserCache($this->getRequestByKey('wallets.user_id'));
-            return $Entity;
+            return $entity;
         });
     }
 
@@ -211,14 +204,14 @@ class WalletApiService extends Service
     public function createWalletUserById()
     {
         return DB::transaction(function () {
-            $Entity = $this->getEntity()
+            $entity = $this->getEntity()
                 ->find($this->getRequestByKey('wallets.id'));
 
-            if (is_null($Entity)) {
+            if (is_null($entity)) {
                 return null;
             }
-            $this->forgetCache(Arr::get($Entity, 'code'));
-            return $Entity->wallet_users()->create($this->getRequestByKey('wallet_users'));
+            $this->forgetCache(Arr::get($entity, 'code'));
+            return $entity->wallet_users()->create($this->getRequestByKey('wallet_users'));
         });
     }
 
@@ -277,23 +270,23 @@ class WalletApiService extends Service
         }
 
         return DB::transaction(function () {
-            $Entity = $this->getEntity()
+            $entity = $this->getEntity()
                 ->find($this->getRequestByKey('wallets.id'));
-            if (is_null($Entity) === true) {
+            if (is_null($entity) === true) {
                 return null;
             }
-            $DetailEntity = $Entity->wallet_details()->create($this->getRequestByKey('wallet_details'));
+            $detailEntity = $entity->wallet_details()->create($this->getRequestByKey('wallet_details'));
             # 不等於公帳
             if ($this->getRequestByKey('wallet_details.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
-                $Users = $this->getRequestByKey('wallet_detail_wallet_user');
+                $users = $this->getRequestByKey('wallet_detail_wallet_user');
                 # 全選
                 if ($this->getRequestByKey('wallet_details.select_all') == 1) {
-                    $Users = $Entity->wallet_users()->get()->pluck('id')->toArray();
+                    $users = $entity->wallet_users()->get()->pluck('id')->toArray();
                 }
                 # 分帳人
-                $DetailEntity->wallet_users()->sync($Users);
+                $detailEntity->wallet_users()->sync($users);
             }
-            return $DetailEntity;
+            return $detailEntity;
         });
     }
 

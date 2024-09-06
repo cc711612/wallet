@@ -38,28 +38,28 @@ class WalletDetailApiService extends Service
      */
     public function updateWalletDetail()
     {
-        if (is_null($this->getRequestByKey('wallet_details.id'))) {
+        if (is_null($this->getRequestByKey('walletDetails.id'))) {
             return null;
         }
 
         return DB::transaction(function () {
-            $Entity = $this->getEntity()
-                ->find($this->getRequestByKey('wallet_details.id'));
+            $entity = $this->getEntity()
+                ->find($this->getRequestByKey('walletDetails.id'));
 
-            if (is_null($Entity) === true) {
+            if (is_null($entity) === true) {
                 return null;
             }
             # 不等於公帳
-            if ($this->getRequestByKey('wallet_details.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
-                $Users = $this->getRequestByKey('wallet_detail_wallet_user');
+            if ($this->getRequestByKey('walletDetails.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
+                $users = $this->getRequestByKey('walletDetailWalletUser');
                 # 全選
-                if ($this->getRequestByKey('wallet_details.select_all') == 1) {
-                    $Users = $Entity->wallets()->first()->wallet_users()->get()->pluck('id')->toArray();
+                if ($this->getRequestByKey('walletDetails.selectAll') == 1) {
+                    $users = $entity->wallets()->first()->wallet_users()->get()->pluck('id')->toArray();
                 }
-                $Entity->wallet_users()->sync($Users);
+                $entity->wallet_users()->sync($users);
             }
 
-            return $Entity->update($this->getRequestByKey('wallet_details'));
+            return $entity->update($this->getRequestByKey('walletDetails'));
         });
     }
 
@@ -70,7 +70,7 @@ class WalletDetailApiService extends Service
      */
     public function findDetail()
     {
-        if (is_null($this->getRequestByKey('wallet_details.id')) === true) {
+        if (is_null($this->getRequestByKey('walletDetails.id')) === true) {
             return null;
         }
         $result = $this->getEntity()
@@ -78,7 +78,7 @@ class WalletDetailApiService extends Service
                 'wallet_users',
             ])
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
-            ->find($this->getRequestByKey('wallet_details.id'));
+            ->find($this->getRequestByKey('walletDetails.id'));
 
         return $result;
     }
@@ -94,7 +94,7 @@ class WalletDetailApiService extends Service
         return $this->getEntity()
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
             ->whereIn('id', $this->getRequestByKey('checkout.ids'))
-            ->update($this->getRequestByKey('wallet_details'));
+            ->update($this->getRequestByKey('walletDetails'));
     }
 
     /**
@@ -107,8 +107,8 @@ class WalletDetailApiService extends Service
         $this->forgetDetailCache($this->getRequestByKey('wallets.id'));
         return $this->getEntity()
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
-            ->where('checkout_at', $this->getRequestByKey('checkout_at'))
-            ->update($this->getRequestByKey('wallet_details'));
+            ->where('checkout_at', $this->getRequestByKey('checkoutAt'))
+            ->update($this->getRequestByKey('walletDetails'));
     }
 
     /**
@@ -118,13 +118,13 @@ class WalletDetailApiService extends Service
      * @Author: Roy
      * @DateTime: 2022/9/5 下午 10:28
      */
-    public function getPublicDetailByWalletId(int $wallet_id): Collection
+    public function getPublicDetailByWalletId(int $walletId): Collection
     {
         return $this->getEntity()
             ->select([
                 'id', 'wallet_id', 'type', 'symbol_operation_type_id', 'value',
             ])
-            ->where('wallet_id', $wallet_id)
+            ->where('wallet_id', $walletId)
             ->where('type', WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE)
             ->get();
     }
@@ -136,14 +136,14 @@ class WalletDetailApiService extends Service
      * @Author: Roy
      * @DateTime: 2023/11/14 下午 09:50
      */
-    public function getWalletBalance(int $wallet_id): float
+    public function getWalletBalance(int $walletId): float
     {
-        $DetailGroupBySymbol = $this->getPublicDetailByWalletId($wallet_id)->groupBy('symbol_operation_type_id');
-        return $DetailGroupBySymbol->get(
+        $detailGroupBySymbol = $this->getPublicDetailByWalletId($walletId)->groupBy('symbol_operation_type_id');
+        return $detailGroupBySymbol->get(
             SymbolOperationTypes::SYMBOL_OPERATION_TYPE_INCREMENT,
             collect([])
         )->sum('value')
             -
-            $DetailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT, collect([]))->sum('value');
+            $detailGroupBySymbol->get(SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT, collect([]))->sum('value');
     }
 }

@@ -42,26 +42,26 @@ class WalletRegisterController extends ApiController
     {
         $requester = (new RegisterRequest($request));
 
-        $Wallet = (new WalletApiService())
+        $wallet = (new WalletApiService())
             ->setRequest($requester->toArray())
             ->getWalletByCode();
 
-        $requester->__set('wallets.id', is_null($Wallet) ? null : $Wallet->id);
+        $requester->__set('wallets.id', is_null($wallet) ? null : $wallet->id);
 
-        $Validate = (new RegisterValidator($requester))->validate();
-        if ($Validate->fails() === true) {
+        $validate = (new RegisterValidator($requester))->validate();
+        if ($validate->fails() === true) {
             return response()->json([
                 'status'  => false,
                 'code'    => 400,
-                'message' => $Validate->errors()->first(),
+                'message' => $validate->errors()->first(),
             ]);
         }
 
-        $UserEntity = (new WalletApiService())
+        $userEntity = (new WalletApiService())
             ->setRequest($requester->toArray())
             ->createWalletUserById();
 
-        if (is_null($UserEntity)) {
+        if (is_null($userEntity)) {
             return response()->json([
                 'status'  => false,
                 'code'    => 400,
@@ -70,24 +70,24 @@ class WalletRegisterController extends ApiController
         }
         WalletUserRegister::dispatch(
             [
-                'wallet_user,' => $UserEntity,
-                'wallet'       => $Wallet,
+                'wallet_user,' => $userEntity,
+                'wallet'       => $wallet,
             ]
         );
         # set cache
-        $this->setMemberTokenCache($UserEntity);
+        $this->setMemberTokenCache($userEntity);
 
         return response()->json([
             'status'  => true,
             'code'    => 200,
             'message' => null,
             'data'    => [
-                'id'           => Arr::get($UserEntity, 'id'),
-                'name'         => Arr::get($UserEntity, 'name'),
-                'member_token' => Arr::get($UserEntity, 'token'),
+                'id'           => Arr::get($userEntity, 'id'),
+                'name'         => Arr::get($userEntity, 'name'),
+                'member_token' => Arr::get($userEntity, 'token'),
                 'wallet'       => [
-                    'id'   => Arr::get($Wallet, 'id'),
-                    'code' => Arr::get($Wallet, 'code'),
+                    'id'   => Arr::get($wallet, 'id'),
+                    'code' => Arr::get($wallet, 'code'),
                 ],
             ],
         ]);

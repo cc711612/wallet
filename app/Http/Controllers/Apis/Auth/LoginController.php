@@ -38,10 +38,10 @@ class LoginController extends ApiController
      */
     public function login(Request $request)
     {
-        $Requester = (new LoginRequest($request));
-        $Validate = (new LoginValidator($Requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $requester = (new LoginRequest($request));
+        $validate = (new LoginValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
         $credentials = request(['account', 'password']);
 
@@ -50,27 +50,26 @@ class LoginController extends ApiController
             return $this->response()->errorBadRequest("密碼有誤");
         }
         // 綁定
-        if ($Requester->type == 'bind') {
-            $bind = app(WalletUserApiService::class)->walletUserBindByUserId(Auth::user()->id, $Requester->jwt_token, $Requester->toArray());
+        if ($requester->type == 'bind') {
+            $bind = app(WalletUserApiService::class)->walletUserBindByUserId(Auth::user()->id, $requester->jwt_token, $requester->toArray());
             if ($bind['status'] === false) {
                 return $this->response()->errorBadRequest($bind['message']);
             }
         } else {
             $user = Auth::user();
-            $user->agent = Arr::get($Requester->toArray(), 'users.agent');
-            $user->ip = Arr::get($Requester->toArray(), 'users.ip');
+            $user->agent = Arr::get($requester->toArray(), 'users.agent');
+            $user->ip = Arr::get($requester->toArray(), 'users.ip');
             $user->save();
         }
 
         # set cache
-        $this->MemberTokenCache();
+        $this->memberTokenCache();
 
         return $this->response()->success(
             (new AuthResource(Auth::user()))
                 ->login()
         );
     }
-
 
     public function thirdPartyLogin(Request $request)
     {
@@ -81,7 +80,7 @@ class LoginController extends ApiController
         }
         Auth::login($socialEntity->users()->first());
         # set cache
-        $this->MemberTokenCache();
+        $this->memberTokenCache();
         return $this->response()->success(
             (new AuthResource(Auth::user()))
                 ->login()

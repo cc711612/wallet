@@ -25,22 +25,22 @@ class WalletUserController extends ApiController
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
-    private $wallet_api_service;
+    private $walletApiService;
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletUserApiService
      */
-    private $wallet_user_api_service;
+    private $walletUserApiService;
 
 
     /**
-     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $WalletApiService
+     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
      */
     public function __construct(
-        WalletApiService $WalletApiService,
-        WalletUserApiService $WalletUserApiService
+        WalletApiService $walletApiService,
+        WalletUserApiService $walletUserApiService
     ) {
-        $this->wallet_api_service = $WalletApiService;
-        $this->wallet_user_api_service = $WalletUserApiService;
+        $this->walletApiService = $walletApiService;
+        $this->walletUserApiService = $walletUserApiService;
     }
 
     /**
@@ -54,21 +54,21 @@ class WalletUserController extends ApiController
     {
         $requester = (new WalletUserIndexRequest($request));
 
-        $Validate = (new WalletUserIndexValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletUserIndexValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
-        $Wallet = $this->wallet_api_service
+        $wallet = $this->walletApiService
             ->setRequest($requester->toArray())
             ->getWalletWithUserByCode();
 
-        return $this->response()->success((new WalletUserResource($Wallet))->index());
+        return $this->response()->success((new WalletUserResource($wallet))->index());
     }
 
     public function update(Request $request)
     {
-        $walletUser  = $this->wallet_user_api_service
+        $walletUser  = $this->walletUserApiService
             ->find(Arr::get($request, 'wallet_users_id'));
         if ($walletUser) {
             $request->merge([
@@ -82,7 +82,7 @@ class WalletUserController extends ApiController
             return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
-        $this->wallet_user_api_service
+        $this->walletUserApiService
             ->update(
                 Arr::get($requester, 'wallet_users.id'),
                 Arr::get($requester, 'wallet_users'),
@@ -102,20 +102,20 @@ class WalletUserController extends ApiController
     {
         $requester = (new WalletUserDestroyRequest($request));
 
-        $Validate = (new WalletUserDestroyValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletUserDestroyValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
-        $WalletUsers = $this->wallet_user_api_service
+        $walletUsers = $this->walletUserApiService
             ->setRequest($requester->toArray())
             ->getUserWithDetail();
 
         # 驗證
-        if (is_null($WalletUsers) === false && $WalletUsers->created_wallet_details->isEmpty() === false) {
+        if (is_null($walletUsers) === false && $walletUsers->created_wallet_details->isEmpty() === false) {
             return $this->response()->errorBadRequest("成員已新增細項,無法刪除");
         }
         try {
-            $this->wallet_user_api_service
+            $this->walletUserApiService
                 ->setRequest($requester->toArray())
                 ->delete();
         } catch (\Exception $e) {

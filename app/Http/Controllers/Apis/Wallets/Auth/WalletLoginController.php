@@ -41,11 +41,11 @@ class WalletLoginController extends Controller
     public function login(Request $request)
     {
         $requester = (new LoginRequest($request));
-        $Wallet = (new WalletApiService())
+        $wallet = (new WalletApiService()) // 變數名稱修正
             ->setRequest($requester->toArray())
             ->getWalletByCode();
 
-        if (is_null($Wallet)) {
+        if (is_null($wallet)) {
             return response()->json([
                 'status'  => false,
                 'code'    => 400,
@@ -53,8 +53,8 @@ class WalletLoginController extends Controller
             ]);
         }
 
-        $requester->__set('wallets.id', is_null($Wallet) ? null : $Wallet->id);
-        $requester->__set('wallet_users.wallet_id', is_null($Wallet) ? null : $Wallet->id);
+        $requester->__set('wallets.id', is_null($wallet) ? null : $wallet->id);
+        $requester->__set('wallet_users.wallet_id', is_null($wallet) ? null : $wallet->id);
 
         $Validate = (new LoginValidator($requester))->validate();
         if ($Validate->fails() === true) {
@@ -65,24 +65,24 @@ class WalletLoginController extends Controller
             ]);
         }
 
-        $UserEntity = (new WalletUserApiService())
+        $userEntity = (new WalletUserApiService()) // 變數名稱修正
             ->setRequest($requester->toArray())
             ->getWalletUserByNameAndWalletId();
 
-        $requester->__set('wallet_users.id', $UserEntity->id);
+        $requester->__set('wallet_users.id', $userEntity->id);
 
         app(WalletUserApiService::class)
             ->setRequest($requester->toArray())
             ->updateWalletUser();
 
-        if (is_null($UserEntity)) {
+        if (is_null($userEntity)) {
             return response()->json([
                 'status'  => false,
                 'code'    => 401,
                 'message' => "系統錯誤",
             ]);
         }
-        if ($UserEntity->is_admin == 1) {
+        if ($userEntity->is_admin == 1) { // 變數名稱修正
             return response()->json([
                 'status'  => false,
                 'code'    => 401,
@@ -90,7 +90,7 @@ class WalletLoginController extends Controller
             ]);
         }
         # set cache
-        $this->setMemberTokenCache($UserEntity);
+        $this->setMemberTokenCache($userEntity);
         $key = config('app.name');
         $payload = [
             'iss' => config('app.url'),
@@ -99,10 +99,10 @@ class WalletLoginController extends Controller
             'exp' => now()->addMonth()->timestamp,
             'nbf' => now()->timestamp,
             'wallet_user' => [
-                'id' => Crypt::encryptString($UserEntity->id),
-                'name' => $UserEntity->name,
-                'created_at' => $UserEntity->created_at,
-                'updated_at' => $UserEntity->updated_at,
+                'id' => Crypt::encryptString($userEntity->id),
+                'name' => $userEntity->name,
+                'created_at' => $userEntity->created_at,
+                'updated_at' => $userEntity->updated_at,
             ]
         ];
 
@@ -111,14 +111,14 @@ class WalletLoginController extends Controller
             'code'    => 200,
             'message' => null,
             'data'    => [
-                'id'           => Arr::get($UserEntity, 'id'),
-                'name'         => Arr::get($UserEntity, 'name'),
-                'wallet_id'    => Arr::get($UserEntity, 'wallet_id'),
-                'member_token' => Arr::get($UserEntity, 'token'),
+                'id'           => Arr::get($userEntity, 'id'),
+                'name'         => Arr::get($userEntity, 'name'),
+                'wallet_id'    => Arr::get($userEntity, 'wallet_id'),
+                'member_token' => Arr::get($userEntity, 'token'),
                 'jwt'          => JWT::encode($payload, $key, 'HS256'),
                 'wallet'       => [
-                    'id'   => Arr::get($Wallet, 'id'),
-                    'code' => Arr::get($Wallet, 'code'),
+                    'id'   => Arr::get($wallet, 'id'),
+                    'code' => Arr::get($wallet, 'code'),
                 ],
             ],
         ]);
@@ -135,11 +135,11 @@ class WalletLoginController extends Controller
     {
         $requester = (new LoginTokenRequest($request));
 
-        $Wallet = (new WalletApiService())
+        $wallet = (new WalletApiService()) // 變數名稱修正
             ->setRequest($requester->toArray())
             ->getWalletByCode();
 
-        if (is_null($Wallet)) {
+        if (is_null($wallet)) {
             return response()->json([
                 'status'  => false,
                 'code'    => 400,
@@ -147,8 +147,8 @@ class WalletLoginController extends Controller
             ]);
         }
 
-        $requester->__set('wallets.id', is_null($Wallet) ? null : $Wallet->id);
-        $requester->__set('wallet_users.wallet_id', is_null($Wallet) ? null : $Wallet->id);
+        $requester->__set('wallets.id', is_null($wallet) ? null : $wallet->id);
+        $requester->__set('wallet_users.wallet_id', is_null($wallet) ? null : $wallet->id);
 
         $Validate = (new LoginTokenValidator($requester))->validate();
         if ($Validate->fails() === true) {
@@ -158,18 +158,18 @@ class WalletLoginController extends Controller
                 'message' => $Validate->errors()->first(),
             ]);
         }
-        $UserEntity = (new WalletUserApiService())
+        $userEntity = (new WalletUserApiService()) // 變數名稱修正
             ->setRequest($requester->toArray())
             ->getWalletUserByTokenAndWalletId();
 
-        if (is_null($UserEntity)) {
+        if (is_null($userEntity)) {
             return response()->json([
                 'status'  => false,
                 'code'    => 401,
                 'message' => "系統錯誤",
             ]);
         }
-        if ($UserEntity->is_admin == 1) {
+        if ($userEntity->is_admin == 1) { // 變數名稱修正
             return response()->json([
                 'status'  => false,
                 'code'    => 401,
@@ -178,20 +178,20 @@ class WalletLoginController extends Controller
         }
 
         # set cache
-        $this->setMemberTokenCache($UserEntity);
+        $this->setMemberTokenCache($userEntity);
 
         return response()->json([
             'status'  => true,
             'code'    => 200,
             'message' => null,
             'data'    => [
-                'id'           => Arr::get($UserEntity, 'id'),
-                'name'         => Arr::get($UserEntity, 'name'),
-                'wallet_id'    => Arr::get($UserEntity, 'wallet_id'),
-                'member_token' => Arr::get($UserEntity, 'token'),
+                'id'           => Arr::get($userEntity, 'id'),
+                'name'         => Arr::get($userEntity, 'name'),
+                'wallet_id'    => Arr::get($userEntity, 'wallet_id'),
+                'member_token' => Arr::get($userEntity, 'token'),
                 'wallet'       => [
-                    'id'   => Arr::get($Wallet, 'id'),
-                    'code' => Arr::get($Wallet, 'code'),
+                    'id'   => Arr::get($wallet, 'id'),
+                    'code' => Arr::get($wallet, 'code'),
                 ],
             ],
         ]);

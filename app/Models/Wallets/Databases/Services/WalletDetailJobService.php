@@ -27,24 +27,24 @@ class WalletDetailJobService extends Service
     }
 
     /**
-     * @param $wallet_id
+     * @param $walletId
      *
      * @return mixed
      * @throws \Throwable
      * @Author: Roy
      * @DateTime: 2022/7/4 下午 11:22
      */
-    public function updateAllSelectedWalletDetails($wallet_id)
+    public function updateAllSelectedWalletDetails($walletId)
     {
-        return DB::transaction(function () use ($wallet_id) {
-            $WalletUsers = (new WalletUserApiService())
-                ->getWalletUserByWalletId($wallet_id)->pluck('id')->toArray();
-            $Details = $this->getEntity()
-                ->where('wallet_id', $wallet_id)
+        return DB::transaction(function () use ($walletId) {
+            $walletUsers = (new WalletUserApiService())
+                ->getWalletUserByWalletId($walletId)->pluck('id')->toArray();
+            $details = $this->getEntity()
+                ->where('wallet_id', $walletId)
                 ->where('select_all', 1)
                 ->get();
-            return $Details->map(function (WalletDetailEntity $Detail) use ($WalletUsers) {
-                return $Detail->wallet_users()->sync($WalletUsers);
+            return $details->map(function (WalletDetailEntity $detail) use ($walletUsers) {
+                return $detail->wallet_users()->sync($walletUsers);
             });
         });
     }

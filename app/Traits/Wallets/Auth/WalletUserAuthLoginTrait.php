@@ -20,9 +20,9 @@ trait WalletUserAuthLoginTrait
      * @Author: Roy
      * @DateTime: 2022/6/21 下午 02:56
      */
-    private function setMemberTokenCache(WalletUserEntity $WalletUserEntity)
+    private function setMemberTokenCache(WalletUserEntity $walletUserEntity)
     {
-        $token = $WalletUserEntity->token;
+        $token = $walletUserEntity->token;
         try {
             # 檢查token
             if ($this->checkToken($token)) {
@@ -32,7 +32,7 @@ trait WalletUserAuthLoginTrait
 
             $cache = Cache::add(
                 sprintf(config('cache_key.api.wallet_member_token'), $token),
-                collect([$WalletUserEntity])->keyBy('wallet_id'),
+                collect([$walletUserEntity])->keyBy('wallet_id'),
                 config('app.login_timeout')
             );
             # Log

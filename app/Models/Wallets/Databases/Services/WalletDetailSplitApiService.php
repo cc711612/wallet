@@ -25,17 +25,17 @@ class WalletDetailSplitApiService extends Service
     }
 
     /**
-     * @param  int  $id
-     * @param  array  $attribute
+     * @param  int  $walletId
+     * @param  array  $attributes
      *
      * @return mixed
      * @Author: Roy
      * @DateTime: 2023/11/14 下午 10:08
      */
-    public function updateById(int $id, array $attribute)
+    public function updateById(int $walletId, array $attributes)
     {
         return $this->getEntity()
-            ->where('id', $id)
-            ->update($attribute);
+            ->where('id', $walletId)
+            ->update($attributes);
     }
 }

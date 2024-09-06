@@ -50,13 +50,13 @@ class WalletController extends ApiController
     {
         $requester = (new WalletIndexRequest($request));
 
-        $Wallets = $this->wallet_api_service
+        $wallets = $this->wallet_api_service
             ->setPageCount($requester->page_count)
             ->setRequest($requester->toArray())
             ->paginate();
 
         return $this->response()->success(
-            (new WalletResource($Wallets))
+            (new WalletResource($wallets))
                 ->index()
         );
     }
@@ -72,19 +72,19 @@ class WalletController extends ApiController
     {
         $requester = (new WalletStoreRequest($request));
 
-        $Validate = (new WalletStoreValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletStoreValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
         try {
-            $Wallet = $this->wallet_api_service
+            $wallet = $this->wallet_api_service
                 ->setRequest($requester->toArray())
                 ->createWalletWithUser();
         } catch (\Exception $exception) {
             return $this->response()->fail(json_encode($exception));
         }
         return $this->response()->success(
-            (new WalletResource($Wallet))
+            (new WalletResource($wallet))
                 ->store()
         );
     }
@@ -99,13 +99,12 @@ class WalletController extends ApiController
     public function update(Request $request)
     {
         $requester = (new WalletUpdateRequest($request));
-        $Validate = (new WalletUpdateValidator($requester))->validate();
-        if ($Validate->fails() === true) {
-            return $this->response()->errorBadRequest($Validate->errors()->first());
+        $validate = (new WalletUpdateValidator($requester))->validate();
+        if ($validate->fails() === true) {
+            return $this->response()->errorBadRequest($validate->errors()->first());
         }
 
         try {
-
             $this->wallet_api_service
                 ->update(Arr::get($requester, 'wallets.id'), Arr::get($requester, 'wallets'));
         } catch (\Exception $exception) {
@@ -126,23 +125,22 @@ class WalletController extends ApiController
     {
         $requester = (new WalletCalculationRequest($request));
 
-        $Validate = (new WalletCalculationValidator($requester))->validate();
-        if ($Validate->fails() === true) {
+        $validate = (new WalletCalculationValidator($requester))->validate();
+        if ($validate->fails() === true) {
             return response()->json([
                 'status'  => false,
                 'code'    => 400,
-                'message' => $Validate->errors()->first(),
+                'message' => $validate->errors()->first(),
                 'data'    => [],
             ]);
         }
 
-        # 帳本
-        $Wallet = $this->wallet_api_service
+        $wallet = $this->wallet_api_service
             ->setRequest($requester->toArray())
             ->getWalletUsersAndDetails();
 
         return $this->response()->success(
-            (new WalletResource($Wallet))
+            (new WalletResource($wallet))
                 ->calculation()
         );
     }
@@ -187,5 +185,30 @@ class WalletController extends ApiController
         }
 
         return $this->response()->success(null, '綁定成功');
+    }
+
+    /**
+     * 刪除錢包
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(Request $request, $id)
+    {
+        try {
+            $wallet = $this->wallet_api_service->findOrFail($id);
+
+            // 檢查用戶是否有權限刪除此錢包
+            if (!$this->wallet_api_service->canUserDeleteWallet($request->user()->id, $wallet->id)) {
+                return $this->response()->errorForbidden('您沒有權限刪除此錢包');
+            }
+
+            $this->wallet_api_service->delete($wallet);
+
+            return $this->response()->success(null, '錢包已成功刪除');
+        } catch (\Exception $e) {
+            return $this->response()->errorInternalError('刪除錢包時發生錯誤：' . $e->getMessage());
+        }
     }
 }
