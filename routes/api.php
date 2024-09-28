@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Apis\Auth\LogoutController;
 use App\Http\Controllers\Apis\Auth\LoginController;
+use App\Http\Controllers\Apis\Auth\LogoutController;
+use App\Http\Controllers\Apis\Auth\RegisterController;
+use App\Http\Controllers\Apis\Logs\FrontLogController;
+use App\Http\Controllers\Apis\Logs\LineController;
+use App\Http\Controllers\Apis\Options\OptionController;
+use App\Http\Controllers\Apis\Socials\SocialController;
+use App\Http\Controllers\Apis\Wallets\Auth\WalletLoginController;
+use App\Http\Controllers\Apis\Wallets\Auth\WalletRegisterController;
 use App\Http\Controllers\Apis\Wallets\WalletController;
 use App\Http\Controllers\Apis\Wallets\WalletDetailController;
 use App\Http\Controllers\Apis\Wallets\WalletUserController;
-use App\Http\Controllers\Apis\Auth\RegisterController;
-use App\Http\Controllers\Apis\Wallets\Auth\WalletRegisterController;
-use App\Http\Controllers\Apis\Wallets\Auth\WalletLoginController;
-use App\Http\Controllers\Apis\Logs\LineController;
-use App\Http\Controllers\Apis\Logs\FrontLogController;
-use App\Http\Controllers\Apis\Options\OptionController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,9 +23,9 @@ use App\Http\Controllers\Apis\Options\OptionController;
 | routes are loaded by the RouteServiceProvider within a group which
 | is assigned the "api" middleware group. Enjoy building your API!
 |
-*/
+ */
 
-Route::group(['middleware' => [], 'as' => 'api.',], function () {
+Route::group(['middleware' => [], 'as' => 'api.'], function () {
     # 登入相關
     Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
         Route::name('thirdParty.line')->post('/thirdParty/line', function () {
@@ -32,9 +33,13 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
         });
         Route::name("login")->post("/login", [LoginController::class, 'login']);
         Route::name("cache")->match(['get', 'post'], "/cache", [LoginController::class, 'cache']);
-        Route::name("register")->post("/register", [RegisterController::class, 'register']);
+        Route::group(['as' => 'register', 'prefix' => 'register'], function () {
+            Route::name("register")->post("/", [RegisterController::class, 'register']);
+            Route::name("register.token")->post("/token", [RegisterController::class, 'registerByToken']);
+        });
         Route::group(['as' => 'thirdParty', 'prefix' => 'thirdParty'], function () {
             Route::name('login')->post('/login', [LoginController::class, 'thirdPartyLogin']);
+            Route::name('checkBind')->post('/checkBind', [SocialController::class, 'checkBind']);
         });
     });
     # 選項
@@ -78,6 +83,8 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
     Route::group(['middleware' => ['VerifyApi']], function () {
         # 登出相關
         Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
+            Route::name('bind')->post('/thirdParty/bind', [SocialController::class, 'bind']);
+            Route::name('unBind')->post('/thirdParty/unBind', [SocialController::class, 'unBind']);
             Route::name("logout")->post("/logout", [LogoutController::class, 'logout']);
         });
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
@@ -116,8 +123,8 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
 });
 Route::fallback(function () {
     return response([
-        'code'    => 404,
-        'status'  => false,
+        'code' => 404,
+        'status' => false,
         'message' => '不支援此方法',
     ], 404);
 });

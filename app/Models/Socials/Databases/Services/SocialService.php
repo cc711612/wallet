@@ -8,9 +8,9 @@
 namespace App\Models\Socials\Databases\Services;
 
 use App\Concerns\Databases\Service;
+use App\Models\Socials\Contracts\Constants\SocialType;
 use App\Models\Socials\Databases\Entities\SocialEntity;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Socials\Contracts\Constants\SocialType;
 
 class SocialService extends Service
 {
@@ -37,7 +37,7 @@ class SocialService extends Service
             [
                 'social_type' => $socialType,
                 'social_type_value' => $socialProfiles['id'],
-                'email' => $socialProfiles['email']
+                'email' => $socialProfiles['email'],
             ],
             [
                 'social_type' => $socialType,
@@ -50,5 +50,48 @@ class SocialService extends Service
         );
 
         return $socialEntity;
+    }
+
+    public function getBySocialTypeAndSocialTypeValue(string $socialType, string $socialTypeValue)
+    {
+        $socialEntity = $this->getEntity();
+        $socialEntity = $socialEntity
+            ->with([
+                'users',
+            ])
+            ->where('social_type', $socialType)
+            ->where('social_type_value', $socialTypeValue)
+            ->first();
+
+        return $socialEntity;
+    }
+
+    /**
+     * update or create
+     * @param array $params
+     * @return void
+     */
+    public function updateOrCreate($params)
+    {
+        $socialType = data_get($params, 'socialType');
+        $socialTypeValue = data_get($params, 'socialTypeValue');
+        /**
+         * @var SocialEntity $socialEntity
+         */
+        $socialEntity = $this->getEntity();
+        return $socialEntity->updateOrCreate(
+            [
+                'social_type' => $socialType,
+                'social_type_value' => $socialTypeValue,
+            ],
+            [
+                'social_type' => $socialType,
+                'social_type_value' => $socialTypeValue,
+                'name' => data_get($params, 'name'),
+                'email' => data_get($params, 'email'),
+                'image' => data_get($params, 'image'),
+                'token' => data_get($params, 'token'),
+            ]
+        );
     }
 }

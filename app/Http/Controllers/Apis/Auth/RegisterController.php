@@ -6,15 +6,17 @@
 
 namespace App\Http\Controllers\Apis\Auth;
 
-use Illuminate\Http\Request;
-use App\Traits\AuthLoginTrait;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Arr;
+use App\Http\Controllers\ApiController;
 use App\Http\Requesters\Apis\Auth\RegisterRequest;
+use App\Http\Resources\AuthResource;
 use App\Http\Validators\Apis\Auth\RegisterValidator;
 use App\Models\Users\Databases\Services\UserApiService;
-use App\Http\Controllers\ApiController;
-use App\Http\Resources\AuthResource;
+use App\Traits\AuthLoginTrait;
+use Cache;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * Class RegisterController
@@ -56,6 +58,40 @@ class RegisterController extends ApiController
         if (!Auth::attempt($credentials)) {
             return $this->response()->errorBadRequest("註冊登入失敗");
         }
+        # set cache
+        $this->memberTokenCache(); // 變數名稱修正
+
+        return $this->response()->success(
+            (new AuthResource(Auth::user()))
+                ->login()
+        );
+    }
+
+    public function registerByToken(Request $request)
+    {
+        $social = Cache::pull('registerByToken_' . $request->get('token'));
+        if (is_null($social)) {
+            return $this->response()->errorBadRequest('token 過期');
+        }
+        $userEntity = (new UserApiService())
+            ->create([
+                'name' => $social->name,
+                'email' => $social->email,
+                'image' => $social->image,
+                'account' => Str::random(18),
+                'password' => Str::random(12),
+                'token' => Str::random(12),
+                'ip' => request()->ip(),
+                'agent' => request()->header('User-Agent'),
+            ]);
+
+        if (is_null($userEntity)) {
+            return $this->response()->fail('新增失敗');
+        }
+        // social 綁定
+        $social->users()->attach($userEntity->id);
+
+        Auth::login($userEntity);
         # set cache
         $this->memberTokenCache(); // 變數名稱修正
 
