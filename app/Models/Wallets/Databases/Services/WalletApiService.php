@@ -9,6 +9,7 @@ namespace App\Models\Wallets\Databases\Services;
 
 use App\Concerns\Databases\Service;
 use App\Jobs\WalletUserRegister;
+use App\Models\Categories\Entities\CategoryEntity;
 use App\Models\ExchangeRates\Databases\Services\ExchangeRateService;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
@@ -101,7 +102,8 @@ class WalletApiService extends Service
                 WalletDetailEntity::Table => function ($queryDetail) {
                     return $queryDetail
                         ->with([
-                            WalletUserEntity::Table
+                            WalletUserEntity::Table,
+                            'category'
                         ])
                         ->where(function ($query) {
                             $query

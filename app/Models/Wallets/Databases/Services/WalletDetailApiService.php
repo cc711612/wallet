@@ -76,6 +76,7 @@ class WalletDetailApiService extends Service
         $result = $this->getEntity()
             ->with([
                 'wallet_users',
+                'category',
             ])
             ->where('wallet_id', $this->getRequestByKey('wallets.id'))
             ->find($this->getRequestByKey('walletDetails.id'));
