@@ -59,6 +59,7 @@ class WalletDetailResource extends JsonResource
                     )) == true) {
                         $users = $walletUsers;
                     }
+            
                     return [
                         'id' => Arr::get($detail, 'id'),
                         'type' => Arr::get($detail, 'type'),
@@ -84,6 +85,7 @@ class WalletDetailResource extends JsonResource
                         ),
                         'rates' => Arr::get($detail, 'rates') ? (float) Arr::get($detail, 'rates') : null,
                         'splits' => Arr::get($detail, 'splits', []),
+                        'category' => new CategoryResource(Arr::get($detail, 'category')),
                     ];
                 })->toArray(),
                 'wallet_users' => Arr::get($wallet, 'wallet_users', []),

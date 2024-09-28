@@ -7,28 +7,28 @@
 
 namespace App\Http\Controllers\Apis\Wallets;
 
-use Illuminate\Http\Request;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailIndexRequest;
-use App\Models\Wallets\Databases\Services\WalletApiService;
-use Illuminate\Support\Arr;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailStoreRequest;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailStoreValidator;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailUpdateRequest;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailUpdateValidator;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailIndexValidator;
-use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
-use App\Models\Wallets\Databases\Services\WalletDetailApiService;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailShowRequest;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailDestroyValidator;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailDestroyRequest;
-use App\Models\Wallets\Databases\Services\WalletUserApiService;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailCheckoutRequest;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailCheckoutValidator;
-use App\Http\Requesters\Apis\Wallets\Details\WalletDetailUncheckoutRequest;
-use App\Http\Validators\Apis\Wallets\Details\WalletDetailUncheckoutValidator;
 use App\Http\Controllers\ApiController;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailCheckoutRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailDestroyRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailIndexRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailShowRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailStoreRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailUncheckoutRequest;
+use App\Http\Requesters\Apis\Wallets\Details\WalletDetailUpdateRequest;
 use App\Http\Resources\WalletDetailResource;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailCheckoutValidator;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailDestroyValidator;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailIndexValidator;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailStoreValidator;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailUncheckoutValidator;
+use App\Http\Validators\Apis\Wallets\Details\WalletDetailUpdateValidator;
 use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
+use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
+use App\Models\Wallets\Databases\Services\WalletApiService;
+use App\Models\Wallets\Databases\Services\WalletDetailApiService;
+use App\Models\Wallets\Databases\Services\WalletUserApiService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class WalletDetailController extends ApiController
 {

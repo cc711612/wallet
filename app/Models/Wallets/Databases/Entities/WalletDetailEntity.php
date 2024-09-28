@@ -7,6 +7,7 @@
 
 namespace App\Models\Wallets\Databases\Entities;
 
+use App\Models\Categories\Entities\CategoryEntity;
 use App\Models\ExchangeRates\Databases\Entities\ExchangeRateEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -28,6 +29,7 @@ class WalletDetailEntity extends Model
      */
     protected $fillable = [
         'wallet_id',
+        'category_id',
         'type',
         'payment_wallet_user_id',
         'title',
@@ -139,5 +141,10 @@ class WalletDetailEntity extends Model
     public function exchange_rates()
     {
         return ExchangeRateEntity::whereDate('date', '=', $this->created_at->format('Y-m-d'))->get();
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(CategoryEntity::class, 'category_id', 'id');
     }
 }
