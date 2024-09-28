@@ -40,6 +40,7 @@ Route::group(['middleware' => [], 'as' => 'api.',], function () {
     # 選項
     Route::group(['as' => 'option.', 'namespace' => 'Options', 'prefix' => '/option'], function () {
         Route::name("exchangeRate")->get("/exchangeRate", [OptionController::class, 'exchangeRate']);
+        Route::name("category")->get("/category", [OptionController::class, 'category']);
     });
     # 帳本成員
     Route::group(['as' => 'wallet.', 'prefix' => '/wallet'], function () {

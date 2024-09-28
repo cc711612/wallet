@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Apis\Options;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Http;
 use App\Http\Resources\OptionResource;
+use App\Models\Categories\Entities\CategoryEntity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -203,5 +204,12 @@ class OptionController extends ApiController
     public function get($url): string
     {
         return Http::get($url)->body();
+    }
+
+    public function category()
+    {
+        $category = CategoryEntity::get();
+
+        return $this->response()->success($category);
     }
 }
