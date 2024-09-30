@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Apis\Socials;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\SocialBindRequest;
 use App\Http\Requests\SocialCheckBindRequest;
+use App\Http\Requests\SocialUnBindRequest;
 use App\Http\Resources\AuthResource;
 use App\Models\Socials\Databases\Services\SocialService;
 use App\Traits\AuthLoginTrait;
@@ -65,6 +66,16 @@ class SocialController extends ApiController
             return $this->response()->errorBadRequest('token is invalid');
         }
         $social->users()->attach($request->user->id);
+        return $this->response()->success();
+    }
+
+    public function unBind(SocialUnBindRequest $request)
+    {
+        $user = $request->user;
+        $socials = $user->socials()->where('social_type', $request->input('socialType'))->get();
+        if ($socials->isNotEmpty()) {
+            $user->socials()->detach($socials->pluck('id'));
+        }
         return $this->response()->success();
     }
 }

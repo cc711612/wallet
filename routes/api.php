@@ -7,6 +7,7 @@ use App\Http\Controllers\Apis\Logs\FrontLogController;
 use App\Http\Controllers\Apis\Logs\LineController;
 use App\Http\Controllers\Apis\Options\OptionController;
 use App\Http\Controllers\Apis\Socials\SocialController;
+use App\Http\Controllers\Apis\Users\UserController;
 use App\Http\Controllers\Apis\Wallets\Auth\WalletLoginController;
 use App\Http\Controllers\Apis\Wallets\Auth\WalletRegisterController;
 use App\Http\Controllers\Apis\Wallets\WalletController;
@@ -83,8 +84,11 @@ Route::group(['middleware' => [], 'as' => 'api.'], function () {
     Route::group(['middleware' => ['VerifyApi']], function () {
         # 登出相關
         Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
-            Route::name('bind')->post('/thirdParty/bind', [SocialController::class, 'bind']);
-            Route::name('unBind')->post('/thirdParty/unBind', [SocialController::class, 'unBind']);
+            Route::group(['as' => 'thirdParty', 'prefix' => 'thirdParty'], function () {
+                Route::name('bind')->post('/bind', [SocialController::class, 'bind']);
+                Route::name('unBind')->post('/unBind', [SocialController::class, 'unBind']);    
+            });
+            Route::name('users.thirdParty')->post('/user/thirdParty', [UserController::class, 'socials']);
             Route::name("logout")->post("/logout", [LogoutController::class, 'logout']);
         });
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {

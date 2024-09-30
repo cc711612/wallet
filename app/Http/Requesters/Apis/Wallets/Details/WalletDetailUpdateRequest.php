@@ -33,7 +33,7 @@ class WalletDetailUpdateRequest extends Request
             'wallet_details.splits' => [],
             'wallet_details.unit' => 'TWD',
             'wallet_details.date' => Carbon::now()->toDateString(),
-            'wallet_details.note' => 0,
+            'wallet_details.note' => null,
             'wallet_details.updated_by' => null,
             'wallet_details.updated_at' => Carbon::now()->toDateTimeString(),
             'wallet_detail_wallet_user' => [],
