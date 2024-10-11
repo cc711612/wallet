@@ -51,7 +51,7 @@ class WalletDetailApiService extends Service
             }
             # 不等於公帳
             if ($this->getRequestByKey('wallet_details.type') != WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE) {
-                $users = $this->getRequestByKey('walletDetailWalletUser');
+                $users = $this->getRequestByKey('wallet_detail_wallet_user');
                 # 全選
                 if ($this->getRequestByKey('wallet_details.selectAll') == 1) {
                     $users = $entity->wallets()->first()->wallet_users()->get()->pluck('id')->toArray();
