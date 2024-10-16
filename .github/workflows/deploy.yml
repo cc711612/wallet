@@ -26,15 +26,19 @@ jobs:
             echo "DEPLOY_HOST=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_ENV
             echo "DEPLOY_USERNAME=${{ secrets.PRODUCTION_USERNAME }}" >> $GITHUB_ENV
             echo "DEPLOY_PORT=${{ secrets.PRODUCTION_PORT }}" >> $GITHUB_ENV
-            echo "DEPLOY_SSHKEY=${{ secrets.PRODUCTION_SSHKEY }}" >> $GITHUB_ENV
             echo "DEPLOY_PATH=${{ secrets.PRODUCTION_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.PRODUCTION_SSHKEY }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
             echo "ENVIRONMENT=development" >> $GITHUB_ENV
             echo "DEPLOY_HOST=${{ secrets.DEVELOP_HOST }}" >> $GITHUB_ENV
             echo "DEPLOY_USERNAME=${{ secrets.DEVELOP_USERNAME }}" >> $GITHUB_ENV
             echo "DEPLOY_PORT=${{ secrets.DEVELOP_PORT }}" >> $GITHUB_ENV
-            echo "DEPLOY_SSHKEY=${{ secrets.DEVELOP_SSHKEY }}" >> $GITHUB_ENV
             echo "DEPLOY_PATH=${{ secrets.DEVELOP_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.DEVELOP_SSHKEY }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           fi
 
       # 執行部署
