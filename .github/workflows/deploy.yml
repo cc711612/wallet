@@ -1,27 +1,51 @@
 name: Deploy
 
-# Trigger the workflow on push and 
-# pull request events on the production branch
+# 觸發條件：針對 push 和 pull request 事件
 on:
   push:
     branches:
       - master
+      - develop
   pull_request:
     branches:
       - master
-      
-# Authenticate to the the server via ssh 
-# and run our deployment script 
+      - develop
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      # 根據分支設置環境變數
+      - name: Set environment based on branch
+        id: set-env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "DEPLOY_HOST=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_ENV
+            echo "DEPLOY_USERNAME=${{ secrets.PRODUCTION_USERNAME }}" >> $GITHUB_ENV
+            echo "DEPLOY_PORT=${{ secrets.PRODUCTION_PORT }}" >> $GITHUB_ENV
+            echo "DEPLOY_SSHKEY=${{ secrets.PRODUCTION_SSHKEY }}" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=${{ secrets.PRODUCTION_PATH }}" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            echo "ENVIRONMENT=development" >> $GITHUB_ENV
+            echo "DEPLOY_HOST=${{ secrets.DEVELOP_HOST }}" >> $GITHUB_ENV
+            echo "DEPLOY_USERNAME=${{ secrets.DEVELOP_USERNAME }}" >> $GITHUB_ENV
+            echo "DEPLOY_PORT=${{ secrets.DEVELOP_PORT }}" >> $GITHUB_ENV
+            echo "DEPLOY_SSHKEY=${{ secrets.DEVELOP_SSHKEY }}" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=${{ secrets.DEVELOP_PATH }}" >> $GITHUB_ENV
+          fi
+
+      # 執行部署
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSHKEY }}
-          script: "cd ${{ secrets.DEPLOY_PATH }} && ./.scripts/deploy.sh"
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USERNAME }}
+          port: ${{ env.DEPLOY_PORT }}
+          key: ${{ env.DEPLOY_SSHKEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }} && ./.scripts/deploy.sh
+          verbose: true
+            
