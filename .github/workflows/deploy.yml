@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install bash
+        run: sudo apt-get install -y bash
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -25,4 +27,3 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSHKEY }}
           script: "cd ${{ secrets.PATH }} && ./.scripts/deploy.sh"
-          verbose: true
