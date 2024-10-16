@@ -53,5 +53,3 @@ jobs:
           key: ${{ env.DEPLOY_SSHKEY }}
           script: |
             cd ${{ env.DEPLOY_PATH }} && ${{ env.DEPLOY_SH }}
-          verbose: true
-            
