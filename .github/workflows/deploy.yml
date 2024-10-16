@@ -23,5 +23,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSHKEY }}
+          key_path: ~/.ssh/id_rsa
           script: "cd /var/www/develop/wallet && ./.scripts/deploy.sh"
+          verbose: true
