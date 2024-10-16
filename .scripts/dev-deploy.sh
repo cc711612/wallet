@@ -11,7 +11,7 @@ echo  "部署開始..."
 (docker exec $PHP_CONTAINER php artisan down) || true 
 
 # 拉取最新版本的應用程式
-git pull develop
+git pull origin develop
 
 # 安裝 Composer 依賴項
 docker exec $PHP_CONTAINER composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader 
