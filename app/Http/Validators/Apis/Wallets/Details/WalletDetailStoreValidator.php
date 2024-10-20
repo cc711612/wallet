@@ -50,6 +50,7 @@ class WalletDetailStoreValidator extends ValidatorAbstracts
             ],
             'wallet_details.category_id' => [
                 'sometimes',
+                'nullable',
                 Rule::exists('categories', 'id'),
             ],
             'wallet_details.type' => [
@@ -72,7 +73,7 @@ class WalletDetailStoreValidator extends ValidatorAbstracts
             'wallet_details.value' => [
                 'required',
                 'integer',
-//                'min:1',
+                //                'min:1',
             ],
             'wallet_details.select_all' => [
                 'required',
