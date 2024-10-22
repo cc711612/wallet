@@ -46,6 +46,7 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
             ],
             'wallet_details.id' => [
                 'required',
+                'nullable',
                 Rule::exists('wallet_details', 'id'),
             ],
             'wallet_details.category_id' => [
