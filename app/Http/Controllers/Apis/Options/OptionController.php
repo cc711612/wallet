@@ -208,8 +208,12 @@ class OptionController extends ApiController
 
     public function category()
     {
+        $cacheKey = 'category';
+        if (Cache::has($cacheKey)) {
+            return $this->response()->success(Cache::get($cacheKey));
+        }
         $category = CategoryEntity::get();
-
+        Cache::put($cacheKey, $category, now()->addHours(1));
         return $this->response()->success($category);
     }
 }
