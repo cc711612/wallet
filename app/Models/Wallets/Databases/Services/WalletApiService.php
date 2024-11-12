@@ -238,6 +238,7 @@ class WalletApiService extends Service
                 ];
             }
             WalletUserEntity::insert($inserts);
+            $this->forgetDetailCache($walletId);
             $entity = $this->getEntity()
                 ->find($walletId);
             $this->forgetCache(Arr::get($entity, 'code'));
