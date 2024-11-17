@@ -76,7 +76,7 @@ class WalletDetailUpdateValidator extends ValidatorAbstracts
             ],
             'wallet_details.value' => [
                 'required',
-                'integer',
+                'numeric',
                 //                'min:1',
             ],
             'wallet_details.select_all' => [
