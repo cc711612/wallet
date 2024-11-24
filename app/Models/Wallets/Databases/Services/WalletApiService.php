@@ -93,10 +93,15 @@ class WalletApiService extends Service
      */
     public function getWalletWithDetail()
     {
-        if (is_null($this->getRequestByKey('wallets.id'))) {
+        $walletId = $this->getRequestByKey('wallets.id');
+        if (is_null($walletId)) {
             return null;
         }
-
+        $cacheKey = $this->getWalletDetailCacheKey($walletId);
+        # Cache
+        if (Cache::has($cacheKey) === true) {
+            return Cache::get($cacheKey);
+        }
         $result = $this->getEntity()
             ->with([
                 WalletDetailEntity::Table => function ($queryDetail) {
@@ -141,6 +146,8 @@ class WalletApiService extends Service
                 ->values();
             return $walletDetail;
         });
+
+        Cache::add($cacheKey, $result, 3600);
 
         return $result;
     }
@@ -231,6 +238,7 @@ class WalletApiService extends Service
                 ];
             }
             WalletUserEntity::insert($inserts);
+            $this->forgetDetailCache($walletId);
             $entity = $this->getEntity()
                 ->find($walletId);
             $this->forgetCache(Arr::get($entity, 'code'));

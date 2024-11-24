@@ -43,7 +43,9 @@ class AutoCalculateWalletCommand extends Command
         $wallet = WalletEntity::where('user_id', $userId)
             ->where('title', Carbon::now()->subMonth()->format('Y.m'))
             ->with([
-                'wallet_details',
+                'wallet_details' => function ($query) {
+                    $query->where('is_personal', 0);
+                },
                 'wallet_users' => function ($query) {
                     $query->with([
                         'users'
@@ -85,7 +87,6 @@ class AutoCalculateWalletCommand extends Command
 
             $messages[] = "總支出金額: {$total}";
             $messages[] = "結算時間: " . Carbon::now()->format('Y-m-d H:i:s');
-
             $walletUsers->each(function (WalletUserEntity $walletUser) use ($messages) {
                 if ($walletUser->users && $walletUser->users->notify_token) {
                     $user = $walletUser->users;

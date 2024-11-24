@@ -27,6 +27,7 @@ jobs:
             echo "DEPLOY_USERNAME=${{ secrets.PRODUCTION_USERNAME }}" >> $GITHUB_ENV
             echo "DEPLOY_PORT=${{ secrets.PRODUCTION_PORT }}" >> $GITHUB_ENV
             echo "DEPLOY_PATH=${{ secrets.PRODUCTION_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_SH=${{ secrets.PRODUCTION_SH_PATH }}" >> $GITHUB_ENV
             echo "DEPLOY_SSHKEY<<EOF" >> $GITHUB_ENV
             echo "${{ secrets.PRODUCTION_SSHKEY }}" >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
@@ -36,6 +37,7 @@ jobs:
             echo "DEPLOY_USERNAME=${{ secrets.DEVELOP_USERNAME }}" >> $GITHUB_ENV
             echo "DEPLOY_PORT=${{ secrets.DEVELOP_PORT }}" >> $GITHUB_ENV
             echo "DEPLOY_PATH=${{ secrets.DEVELOP_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_SH=${{ secrets.DEVELOP_SH_PATH }}" >> $GITHUB_ENV
             echo "DEPLOY_SSHKEY<<EOF" >> $GITHUB_ENV
             echo "${{ secrets.DEVELOP_SSHKEY }}" >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
@@ -50,6 +52,4 @@ jobs:
           port: ${{ env.DEPLOY_PORT }}
           key: ${{ env.DEPLOY_SSHKEY }}
           script: |
-            cd ${{ env.DEPLOY_PATH }} && ./.scripts/deploy.sh
-          verbose: true
-            
+            cd ${{ env.DEPLOY_PATH }} && ${{ env.DEPLOY_SH }}

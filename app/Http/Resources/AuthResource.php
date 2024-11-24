@@ -33,7 +33,7 @@ class AuthResource extends JsonResource
             'iss' => config('app.url'),
             'aud' => 'https://easysplit.usongrat.tw',
             'iat' => now()->timestamp,
-            'exp' => now()->addMonth()->timestamp,
+            'exp' => now()->addYear()->timestamp,
             'nbf' => now()->timestamp,
             'user' => [
                 'id' => Crypt::encryptString($user->id),

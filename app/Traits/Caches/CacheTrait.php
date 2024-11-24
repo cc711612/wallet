@@ -46,6 +46,11 @@ trait CacheTrait
         return false;
     }
 
+    public function getWalletDetailCacheKey($walletId): string
+    {
+        return sprintf($this->getDetailCacheKeyFormat(), $walletId);
+    }
+
     /**
      * @return string
      * @Author: Roy
@@ -65,7 +70,7 @@ trait CacheTrait
      */
     public function forgetDetailCache($id)
     {
-        $cacheKey = sprintf($this->getDetailCacheKeyFormat(), $id);
+        $cacheKey = $this->getWalletDetailCacheKey($id);
         # Cache
 
         if (Cache::has($cacheKey) === true) {

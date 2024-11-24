@@ -22,7 +22,7 @@ class WalletUserObserver
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
-    private $wallet_api_service;
+    private $walletApiService;
 
     /**
      * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
@@ -40,7 +40,7 @@ class WalletUserObserver
      */
     public function created(WalletUserEntity $walletUserEntity)
     {
-        //
+        $this->walletApiService->forgetDetailCache($walletUserEntity->wallet_id);
         return $this->walletApiService->update(
             $walletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
@@ -61,6 +61,7 @@ class WalletUserObserver
         }
 
         $this->forgetWalletUsersCache($walletUserEntity);
+        $this->walletApiService->forgetDetailCache($walletUserEntity->wallet_id);
 
         return $this->walletApiService->update(
             $walletUserEntity->wallet_id,
@@ -77,7 +78,7 @@ class WalletUserObserver
      */
     public function deleted(WalletUserEntity $walletUserEntity)
     {
-        //
+        $this->walletApiService->forgetDetailCache($walletUserEntity->wallet_id);
         $this->walletApiService->update(
             $walletUserEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
