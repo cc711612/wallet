@@ -95,8 +95,8 @@ class Handler extends ExceptionHandler
                 return response()->json([
                     'status' => false,
                     'code' => 400,
-                    'message' => $e->errors(),
-                ], 400);
+                    'message' => collect($e->errors())->flatten()->first(),
+                ], 200);
             }
 
             if (!config('app.debug')) {
