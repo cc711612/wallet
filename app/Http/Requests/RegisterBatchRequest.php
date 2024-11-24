@@ -42,6 +42,18 @@ class RegisterBatchRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'code.required' => 'The code field is required.',
+            'code.string' => 'The code field must be a string.',
+            'code.exists' => 'The provided code does not exist in the wallets table.',
+            'name.*.required' => 'The name field is required.',
+            'name.*.string' => 'The name field must be a string.',
+            'name.*.unique' => 'The name ":input" has already been taken for this wallet.',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         if ($this->code) {
