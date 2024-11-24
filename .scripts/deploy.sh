@@ -8,7 +8,7 @@ echo  "部署開始..."
 
 # 進入維護模式或傳回 true 
 # 如果已經處於維護模式
-(docker exec $PHP_CONTAINER php artisan down) || true 
+#(docker exec $PHP_CONTAINER php artisan down) || true 
 
 # 拉取最新版本的應用程式
 git pull origin master
@@ -30,7 +30,7 @@ docker exec $PHP_CONTAINER php artisan optimize
 docker exec $PHP_CONTAINER php artisan migrate --force 
 
 # 退出維護模式
-docker exec $PHP_CONTAINER php artisan up 
+#docker exec $PHP_CONTAINER php artisan up 
 
 docker restart $PHP_CONTAINER
 

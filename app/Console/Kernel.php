@@ -23,7 +23,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('command:auto_create_wallet')->monthlyOn('1');
         if (env('APP_ENV') == 'production') {
             $schedule->command('command:auto_calculate_wallet')->monthlyOn('1');
-            echo 123;
         }
     }
 
