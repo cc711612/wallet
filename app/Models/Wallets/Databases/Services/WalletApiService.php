@@ -57,24 +57,18 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('per_page')) === false) {
             $pageCount = $this->getRequestByKey('per_page');
         }
-        $walletIds = [];
-        if ($this->getRequestByKey('wallets.is_guest')) {
-            $walletUsers = app(WalletUserApiService::class)
-                ->getWalletUserByUserId($this->getRequestByKey('users.id'));
-
-            $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
-        }
+        $walletUsers = app(WalletUserApiService::class)
+            ->getWalletUserByUserId($this->getRequestByKey('users.id'));
+        $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
         $result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
                     $query->select(['id', 'name']);
                 },
             ])
-            ->when($this->getRequestByKey('wallets.is_guest'), function ($query) use ($walletIds) {
-                return $query->whereIn('id', $walletIds);
-            })
-            ->when(!$this->getRequestByKey('wallets.is_guest'), function ($query) {
-                return $query->where('user_id', $this->getRequestByKey('users.id'));
+            ->where(function ($query) use ($walletIds) {
+                $query->whereIn('id', $walletIds)
+                    ->orWhere('user_id', $this->getRequestByKey('users.id'));
             })
             ->when(is_numeric($this->getRequestByKey('wallets.status')), function ($query) {
                 return $query->where('status', $this->getRequestByKey('wallets.status'));
