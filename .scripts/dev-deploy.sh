@@ -4,7 +4,7 @@ set -e
 # 定義容器名稱或容器 ID（根據你自己的設置）
 PHP_CONTAINER="wallet-php-fpm"
 
-echo  "部署開始..." 
+echo  "部署開始start..." 
 
 # 進入維護模式或傳回 true 
 # 如果已經處於維護模式
