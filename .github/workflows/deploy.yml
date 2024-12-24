@@ -52,4 +52,7 @@ jobs:
           port: ${{ env.DEPLOY_PORT }}
           key: ${{ env.DEPLOY_SSHKEY }}
           script: |
+            echo "Debugging connection to remote server."
+            whoami
+            pwd
             cd ${{ env.DEPLOY_PATH }} && ${{ env.DEPLOY_SH }}
