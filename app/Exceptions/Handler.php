@@ -8,6 +8,7 @@ use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -61,7 +62,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         if ($request->is('api/*')) {
-
+            Log::error($e->getMessage());
             if (
                 $e instanceof SignatureInvalidException ||
                 $e instanceof \Firebase\JWT\ExpiredException  ||
