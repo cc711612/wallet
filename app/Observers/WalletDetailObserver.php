@@ -3,11 +3,11 @@
 namespace App\Observers;
 
 use App\Jobs\LineNotifyJob;
+use App\Jobs\NotificationFCM;
 use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use App\Models\Wallets\Databases\Services\WalletApiService;
-use App\Notifications\LineNotify;
 use Illuminate\Support\Carbon;
 
 /**
@@ -48,26 +48,30 @@ class WalletDetailObserver
             $walletDetailEntity->wallet_id,
             ['updated_at' => Carbon::now()->toDateTimeString()]
         );
-
         // 非個人記帳
         if (!$walletDetailEntity->is_personal) {
             $walletUsers = WalletUserEntity::where('wallet_id', $walletId)
-                ->with(['users'])
+                ->with([
+                    'users'
+                ])
                 ->get();
-
             $walletUsers->each(function (WalletUserEntity $walletUser) use ($wallet, $walletDetailEntity) {
-                if ($walletUser->users && $walletUser->users->notify_token) {
-                    $user = $walletUser->users;
-                    $contents = [
-                        '有一筆新的記帳資料',
-                        '帳本名稱：' . $wallet->title,
-                        '記帳日期：' . $walletDetailEntity->date,
-                        '記帳名稱：' . $walletDetailEntity->title,
-                        '記帳金額：' . number_format($walletDetailEntity->value),
-                    ];
-                    // notify
+                if (!$walletUser->notify_enable) {
+                    return;
+                }
+                $user = $walletUser->users;
+                $contents = [
+                    '有一筆新的記帳資料',
+                    '帳本名稱：' . $wallet->title,
+                    '記帳日期：' . $walletDetailEntity->date,
+                    '記帳名稱：' . $walletDetailEntity->title,
+                    '記帳金額：' . number_format($walletDetailEntity->value),
+                ];
+                if ($user) {
                     LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
                 }
+                // notify
+                NotificationFCM::dispatch($walletDetailEntity->id, $walletUser->id, implode("\r\n", $contents));
             });
         }
 

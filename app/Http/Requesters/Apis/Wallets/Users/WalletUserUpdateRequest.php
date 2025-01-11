@@ -18,6 +18,7 @@ class WalletUserUpdateRequest extends Request
             'wallet_users_id'   => null,
             'wallet_users.name' => null,
             'wallet_users.id' => null,
+            'wallet_users.notify_enable' => false,
         ];
     }
 
@@ -34,6 +35,7 @@ class WalletUserUpdateRequest extends Request
             'wallet_users_id' => Arr::get($row, sprintf("wallet_user.%s.id", Arr::get($row, 'wallet_id'))),
             'wallet_users.name' => Arr::get($row, 'name'),
             'wallet_users.id' => Arr::get($row, 'wallet_users_id'),
+            'wallet_users.notify_enable' => (bool) Arr::get($row, 'notify_enable'),
         ];
     }
 }

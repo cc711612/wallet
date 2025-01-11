@@ -47,4 +47,10 @@ return [
     'easysplit' => [
         'domain'     => env('EASYSPLIT_DOMAIN', 'https://easysplit.usongrat.tw/'),
     ],
+
+    'notification' => [
+        'url' => env('NOTIFICATION_URI'),
+        'key' => env('NOTIFICATION_KEY'),
+        'key_path' => env('NOTIFICATION_KEY_PATH'),
+    ],
 ];

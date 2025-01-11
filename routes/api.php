@@ -3,6 +3,7 @@
 use App\Http\Controllers\Apis\Auth\LoginController;
 use App\Http\Controllers\Apis\Auth\LogoutController;
 use App\Http\Controllers\Apis\Auth\RegisterController;
+use App\Http\Controllers\Apis\Devices\DeviceController;
 use App\Http\Controllers\Apis\Logs\FrontLogController;
 use App\Http\Controllers\Apis\Logs\LineController;
 use App\Http\Controllers\Apis\Options\OptionController;
@@ -86,7 +87,7 @@ Route::group(['middleware' => [], 'as' => 'api.'], function () {
         Route::group(['as' => 'auth.', 'namespace' => 'Auth', 'prefix' => 'auth'], function () {
             Route::group(['as' => 'thirdParty', 'prefix' => 'thirdParty'], function () {
                 Route::name('bind')->post('/bind', [SocialController::class, 'bind']);
-                Route::name('unBind')->post('/unBind', [SocialController::class, 'unBind']);    
+                Route::name('unBind')->post('/unBind', [SocialController::class, 'unBind']);
             });
             Route::name('users.thirdParty')->post('/user/thirdParty', [UserController::class, 'socials']);
             Route::name("logout")->post("/logout", [LogoutController::class, 'logout']);
@@ -102,6 +103,7 @@ Route::group(['middleware' => [], 'as' => 'api.'], function () {
     });
     # 需要wallet_member_token的
     Route::group(['middleware' => ['VerifyWalletMemberApi']], function () {
+        Route::resource('device', DeviceController::class);
         Route::group(['as' => 'wallet.', 'prefix' => 'wallet'], function () {
             Route::group(['as' => 'user.', 'prefix' => 'user'], function () {
                 Route::name("update")->put("{wallet_users_id}", [WalletUserController::class, 'update']);
