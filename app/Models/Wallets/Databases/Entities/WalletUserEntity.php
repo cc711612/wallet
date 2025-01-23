@@ -40,6 +40,11 @@ class WalletUserEntity extends Model
         'deleted_at',
     ];
 
+    protected $casts = [
+        'notify_enable' => 'boolean',
+        'is_admin' => 'boolean',
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *

@@ -119,7 +119,7 @@ class WalletApiService extends Service
                         ->orderByDesc('id');
                 },
                 WalletUserEntity::Table => function ($query) {
-                    $query->select(['id', 'wallet_id', 'user_id', 'name', 'is_admin','created_at', 'updated_at']);
+                    $query->select(['id', 'wallet_id', 'user_id', 'name', 'is_admin', 'notify_enable', 'created_at', 'updated_at']);
                 }
             ])
             ->find($this->getRequestByKey('wallets.id'));
