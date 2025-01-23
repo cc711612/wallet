@@ -29,9 +29,11 @@ class DeviceService extends Service
     public function index($userId, $walletUserId): Collection
     {
         return $this->getEntity()
-            ->where(function ($query) use ($userId, $walletUserId) {
-                $query->where('user_id', $userId)
-                    ->orWhere('wallet_user_id', $walletUserId);
+            ->when($userId, function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->when($walletUserId, function ($query) use ($walletUserId) {
+                $query->where('wallet_user_id', $walletUserId);
             })
             ->where('expired_at', '>', now())
             ->get();

@@ -16,7 +16,6 @@ class DeviceController extends ApiController
 
     public function index(DeviceIndexRequest $request)
     {
-        
         return $this->response()->success(
             $this->deviceService->index($request->user_id, $request->wallet_user_id)
         );
