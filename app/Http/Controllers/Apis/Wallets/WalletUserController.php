@@ -16,9 +16,7 @@ use App\Http\Validators\Apis\Wallets\Users\WalletUserDestroyValidator;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use App\Http\Resources\WalletUserResource;
 use App\Http\Controllers\ApiController;
-use App\Http\Requesters\Apis\Wallets\Users\WalletUserUpdateRequest;
-use App\Http\Validators\Apis\Wallets\Users\WalletUserUpdateValidator;
-use Illuminate\Support\Arr;
+use App\Http\Requests\WalletUsers\WalletUserUpdateRequest;
 
 class WalletUserController extends ApiController
 {
@@ -66,26 +64,18 @@ class WalletUserController extends ApiController
         return $this->response()->success((new WalletUserResource($wallet))->index());
     }
 
-    public function update(Request $request)
+    public function update(WalletUserUpdateRequest $request)
     {
-        $walletUser  = $this->walletUserApiService
-            ->find(Arr::get($request, 'wallet_users_id'));
-        if ($walletUser) {
-            $request->merge([
-                'wallet_id' => $walletUser->wallet_id,
-            ]);
-        }
-        $requester = (new WalletUserUpdateRequest($request));
-
-        $validate = (new WalletUserUpdateValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        $request = $request->only([
+            'wallet_user_id',
+            'name',
+            'notify_enable',
+        ]);
 
         $this->walletUserApiService
             ->update(
-                Arr::get($requester, 'wallet_users.id'),
-                Arr::get($requester, 'wallet_users'),
+                $request['wallet_user_id'],
+                $request,
             );
 
         return $this->response()->success();
