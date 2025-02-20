@@ -47,7 +47,13 @@ class UserApiService extends Service
         if (Cache::get($cacheKey)) {
             return Cache::get($cacheKey);
         }
-        $user = $this->getEntity()->with(['wallet_users'])->find($id);
+        $user = $this->getEntity()
+            ->with([
+                'wallet_users' => function ($query) {
+                    $query->select('id', 'user_id', 'wallet_id');
+                },
+            ])
+            ->find($id);
         if ($user) {
             Cache::put($cacheKey, $user, 3600);
         }
