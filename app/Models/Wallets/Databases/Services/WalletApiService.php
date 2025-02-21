@@ -130,16 +130,17 @@ class WalletApiService extends Service
             ])
             ->find($this->getRequestByKey('wallets.id'));
 
-        $createTimes = $result->wallet_details
-            ->pluck('created_at')
-            ->map(function ($item) {
-                return $item->format('Y-m-d');
-            })
-            ->uniqueStrict()
-            ->values();
+        // $createTimes = $result->wallet_details
+        //     ->pluck('created_at')
+        //     ->map(function ($item) {
+        //         return $item->format('Y-m-d');
+        //     })
+        //     ->uniqueStrict()
+        //     ->values();
 
-        $exchangeRateService = app(ExchangeRateService::class);
-        $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
+        // $exchangeRateService = app(ExchangeRateService::class);
+        // $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
+        $exchangeRates = collect([]);
         $result->wallet_details = $result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
             $walletDetail->exchange_rates = $exchangeRates
                 ->get($walletDetail->created_at->format('Y-m-d'), collect([]))
