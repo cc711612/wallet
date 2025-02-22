@@ -13,13 +13,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
+use Illuminate\Support\Facades\Log;
 
 class NotificationFCM implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    
+
     private $walletUserId;
     private $message;
     private $walletDetailId;
@@ -45,7 +45,7 @@ class NotificationFCM implements ShouldQueue
         $walletUser = WalletUserEntity::find($this->walletUserId);
         $devices = app(DeviceService::class)
             ->getActiveDeviceByUserId($walletUser->user_id, $walletUser->id);
-            
+
         if ($devices->isEmpty()) {
             return;
         }
@@ -60,16 +60,17 @@ class NotificationFCM implements ShouldQueue
             ]
         ]);
 
-        $client->post('/v1/firebase/batch', [
+        $response = $client->post('/v1/firebase/batch', [
             'json' => [
                 'platform' => 'FCM',
                 'targetId' => $this->walletDetailId,
                 'platformBotId' => 'Easysplit-App',
                 'platformParameters' => json_decode(
                     file_get_contents(
-                        config('services.notification.key_path')
-                    )
-                , 1),
+                        storage_path('easysplit-firebase-key.json')
+                    ),
+                    1
+                ),
                 'webhookUrl' => null,
                 'users' => $devices->map(function ($device) use ($walletUser) {
                     return [
@@ -88,5 +89,6 @@ class NotificationFCM implements ShouldQueue
                 })->toArray(),
             ]
         ]);
+        Log::info($response->getBody()->getContents());
     }
 }

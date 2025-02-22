@@ -4,6 +4,7 @@
  * @Author: Roy
  * @DateTime: 2022/6/21 上午 11:25
  */
+
 namespace App\Models\Devices\Databases\Services;
 
 use App\Concerns\Databases\Service;
@@ -89,7 +90,7 @@ class DeviceService extends Service
             ->when($userId, function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
-            ->when($walletUserId, function ($query) use ($walletUserId) {
+            ->when($walletUserId && !$userId, function ($query) use ($walletUserId) {
                 $query->where('wallet_user_id', $walletUserId);
             })
             ->get();
