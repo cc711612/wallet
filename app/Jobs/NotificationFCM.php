@@ -53,7 +53,7 @@ class NotificationFCM implements ShouldQueue
             'targetId' => (string)$this->walletDetailId,
             'platformBotId' => 'Easysplit-App',
             'platformParameters' => json_decode(file_get_contents(storage_path('easysplit-firebase-key.json')), 1),
-            'webhookUrl' => config('app.url'),
+            'webhookUrl' => route('api.auth.cache'),
             'users' => $devices->map(function ($device) use ($walletUser) {
                 $userId = $device->wallet_user_id ? $device->wallet_user_id : $device->user_id;
                 return [
