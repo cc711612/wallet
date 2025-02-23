@@ -3,10 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Devices\Databases\Services\DeviceService;
-use App\Models\Users\Databases\Entities\UserEntity;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
-use App\Models\Wallets\Databases\Services\WalletApiService;
-use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use GuzzleHttp\Client;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -53,25 +50,21 @@ class NotificationFCM implements ShouldQueue
         $notificationUrl = config('services.notification.url');
         $requestBody = [
             'platform' => 'FCM',
-            'targetId' => $this->walletDetailId,
+            'targetId' => (string)$this->walletDetailId,
             'platformBotId' => 'Easysplit-App',
-            'platformParameters' => json_decode(
-                file_get_contents(storage_path('easysplit-firebase-key.json')),
-                true
-            ),
-            'webhookUrl' => null,
+            'platformParameters' => json_decode(file_get_contents(storage_path('easysplit-firebase-key.json')), 1),
+            'webhookUrl' => config('app.url'),
             'users' => $devices->map(function ($device) use ($walletUser) {
+                $userId = $device->wallet_user_id ? $device->wallet_user_id : $device->user_id;
                 return [
-                    'userId' => $device->wallet_user_id,
+                    'userId' => $userId,
                     'userName' => $walletUser->name,
                     'notificationId' => $device->fcm_token,
                     'messages' => [
-                        [
-                            'title' => 'Easysplit',
-                            'body' => $this->message,
-                            'icon' => 'https://easysplit.usongrat.tw/images/logo.png',
-                            'click_action' => 'https://easysplit.usongrat.tw/',
-                        ]
+                        'title' => 'Easysplit',
+                        'content' => $this->message,
+                        'icon' => 'https://easysplit.usongrat.tw/images/logo.png',
+                        'click_action' => 'https://easysplit.usongrat.tw/',
                     ]
                 ];
             })->toArray(),
@@ -86,15 +79,12 @@ class NotificationFCM implements ShouldQueue
                     'X-API-KEY' => config('services.notification.key'),
                 ]
             ]);
-
             // 記錄請求 URL 和 BODY
             Log::info('Sending notification', [
-                'url' => $notificationUrl . '/v1/firebase/batch',
+                'url' => $notificationUrl . 'api/v1/firebase/batch',
                 'request_body' => $requestBody,
             ]);
-
-            $response = $client->post('/v1/firebase/batch', ['json' => $requestBody]);
-
+            $response = $client->post('/api/v1/firebase/batch', ['json' => $requestBody]);
             // 記錄 Response
             Log::info('Notification response', [
                 'status_code' => $response->getStatusCode(),
@@ -103,7 +93,7 @@ class NotificationFCM implements ShouldQueue
         } catch (\Exception $e) {
             Log::error('Notification request failed', [
                 'error_message' => $e->getMessage(),
-                'url' => $notificationUrl . '/v1/firebase/batch',
+                'url' => $notificationUrl . '/api/v1/firebase/batch',
                 'request_body' => $requestBody,
             ]);
         }
