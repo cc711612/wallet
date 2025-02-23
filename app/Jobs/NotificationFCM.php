@@ -49,46 +49,63 @@ class NotificationFCM implements ShouldQueue
         if ($devices->isEmpty()) {
             return;
         }
+
         $notificationUrl = config('services.notification.url');
-
-        $client = new Client([
-            'base_uri' => $notificationUrl,
-            'timeout' => 5.0,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'X-API-KEY' => config('services.notification.key')
-            ]
-        ]);
-
-        $response = $client->post('/v1/firebase/batch', [
-            'json' => [
-                'platform' => 'FCM',
-                'targetId' => $this->walletDetailId,
-                'platformBotId' => 'Easysplit-App',
-                'platformParameters' => json_decode(
-                    file_get_contents(
-                        storage_path('easysplit-firebase-key.json')
-                    ),
-                    1
-                ),
-                'webhookUrl' => null,
-                'users' => $devices->map(function ($device) use ($walletUser) {
-                    return [
-                        'userId' => $device->wallet_user_id,
-                        'userName' => $walletUser->name,
-                        'notificationId' => $device->fcm_token,
-                        'messages' => [
-                            [
-                                'title' => 'Easysplit',
-                                'body' => $this->message,
-                                'icon' => 'https://easysplit.usongrat.tw/images/logo.png',
-                                'click_action' => 'https://easysplit.usongrat.tw/',
-                            ]
+        $requestBody = [
+            'platform' => 'FCM',
+            'targetId' => $this->walletDetailId,
+            'platformBotId' => 'Easysplit-App',
+            'platformParameters' => json_decode(
+                file_get_contents(storage_path('easysplit-firebase-key.json')),
+                true
+            ),
+            'webhookUrl' => null,
+            'users' => $devices->map(function ($device) use ($walletUser) {
+                return [
+                    'userId' => $device->wallet_user_id,
+                    'userName' => $walletUser->name,
+                    'notificationId' => $device->fcm_token,
+                    'messages' => [
+                        [
+                            'title' => 'Easysplit',
+                            'body' => $this->message,
+                            'icon' => 'https://easysplit.usongrat.tw/images/logo.png',
+                            'click_action' => 'https://easysplit.usongrat.tw/',
                         ]
-                    ];
-                })->toArray(),
-            ]
-        ]);
-        Log::info($response->getBody()->getContents());
+                    ]
+                ];
+            })->toArray(),
+        ];
+
+        try {
+            $client = new Client([
+                'base_uri' => $notificationUrl,
+                'timeout' => 5.0,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'X-API-KEY' => config('services.notification.key'),
+                ]
+            ]);
+
+            // 記錄請求 URL 和 BODY
+            Log::info('Sending notification', [
+                'url' => $notificationUrl . '/v1/firebase/batch',
+                'request_body' => $requestBody,
+            ]);
+
+            $response = $client->post('/v1/firebase/batch', ['json' => $requestBody]);
+
+            // 記錄 Response
+            Log::info('Notification response', [
+                'status_code' => $response->getStatusCode(),
+                'response_body' => $response->getBody()->getContents(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Notification request failed', [
+                'error_message' => $e->getMessage(),
+                'url' => $notificationUrl . '/v1/firebase/batch',
+                'request_body' => $requestBody,
+            ]);
+        }
     }
 }
