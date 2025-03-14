@@ -28,12 +28,13 @@ class WalletUserResource extends JsonResource
     {
         return [
             'wallet' => [
-                'users' => $this->resource->wallet_users->map(function ($User) {
+                'users' => $this->resource->wallet_users->map(function ($user) {
                     return [
-                        'id'       => Arr::get($User, 'id'),
-                        'name'     => Arr::get($User, 'name'),
-                        'user_id'  => Arr::get($User, 'user_id'),
-                        'is_admin' => Arr::get($User, 'is_admin') ? true : false,
+                        'id'       => Arr::get($user, 'id'),
+                        'name'     => Arr::get($user, 'name'),
+                        'user_id'  => Arr::get($user, 'user_id'),
+                        'is_admin' => Arr::get($user, 'is_admin') ? true : false,
+                        'notify_enable' => Arr::get($user, 'notify_enable') ? true : false,
                     ];
                 }),
             ],

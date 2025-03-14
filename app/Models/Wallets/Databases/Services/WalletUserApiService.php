@@ -76,6 +76,9 @@ class WalletUserApiService extends Service
             return null;
         }
         return $this->getEntity()
+            ->with([
+                'devices'
+            ])
             ->where('wallet_id', $this->getRequestByKey('wallet_users.wallet_id'))
             ->where('name', $this->getRequestByKey('wallet_users.name'))
             ->first();
@@ -255,5 +258,31 @@ class WalletUserApiService extends Service
             ->where('wallet_id', $walletId)
             ->where('user_id', $userId)
             ->exists();
+    }
+
+    public function getWalletUsers($userId, $walletUserId)
+    {
+        return $this->getEntity()
+            ->with([
+                'wallets' => function ($query) {
+                    $query->select(['id', 'code']);
+                }
+            ])
+            ->when($userId, function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->when($walletUserId, function ($query) use ($walletUserId) {
+                $query->where('id', $walletUserId);
+            })
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'wallet_id' => $item->wallet_id,
+                    'notify_enable' => $item->notify_enable,
+                    'wallets' => $item->wallets
+                ];
+            });
     }
 }

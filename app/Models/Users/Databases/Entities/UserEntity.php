@@ -7,7 +7,7 @@
 
 namespace App\Models\Users\Databases\Entities;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Devices\Databases\Entities\DeviceEntity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Socials\Databases\Entities\SocialEntity;
@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Arr;
 
 class UserEntity extends Authenticatable
 {
@@ -106,6 +105,17 @@ class UserEntity extends Authenticatable
     public function wallet_users()
     {
         return $this->hasMany(WalletUserEntity::class, 'user_id', 'id');
+    }
+
+    /**
+     * Get the devices associated with the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function devices()
+    {
+        return $this->hasMany(DeviceEntity::class, 'user_id', 'id')
+            ->where('expired_at', '>', now());
     }
 
     public function routeNotificationForNotify($notification)

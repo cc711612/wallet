@@ -7,6 +7,7 @@
 
 namespace App\Models\Wallets\Databases\Entities;
 
+use App\Models\Devices\Databases\Entities\DeviceEntity;
 use App\Models\Users\Databases\Entities\UserEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,9 +34,15 @@ class WalletUserEntity extends Model
         'agent',
         'ip',
         'is_admin',
+        'notify_enable',
         'created_at',
         'updated_at',
         'deleted_at',
+    ];
+
+    protected $casts = [
+        'notify_enable' => 'boolean',
+        'is_admin' => 'boolean',
     ];
 
     /**
@@ -63,6 +70,17 @@ class WalletUserEntity extends Model
     public function users()
     {
         return $this->belongsTo(UserEntity::class, 'user_id', 'id');
+    }
+
+    /**
+     * Get the device associated with the wallet user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\hasMany
+     */
+    public function devices()
+    {
+        return $this->hasMany(DeviceEntity::class, 'wallet_user_id', 'id')
+            ->where('expired_at', '>', now());
     }
 
     /**

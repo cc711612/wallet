@@ -17,6 +17,7 @@ use App\Traits\Wallets\Auth\WalletUserAuthLoginTrait;
 use App\Models\Wallets\Databases\Services\WalletApiService;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 use App\Http\Requesters\Apis\Wallets\Auth\LoginTokenRequest;
+use App\Http\Resources\DeviceResource;
 use App\Http\Validators\Apis\Wallets\Auth\LoginTokenValidator;
 use Firebase\JWT\JWT;
 
@@ -105,7 +106,7 @@ class WalletLoginController extends Controller
                 'updated_at' => $userEntity->updated_at,
             ]
         ];
-
+    
         return response()->json([
             'status'  => true,
             'code'    => 200,
@@ -120,6 +121,10 @@ class WalletLoginController extends Controller
                     'id'   => Arr::get($wallet, 'id'),
                     'code' => Arr::get($wallet, 'code'),
                 ],
+                'devices'      => DeviceResource::collection($userEntity->devices),
+                'notifies'       => app(WalletUserApiService::class)
+                    ->setRequest($requester->toArray())
+                    ->getWalletUsers(null, $userEntity->id)
             ],
         ]);
     }
