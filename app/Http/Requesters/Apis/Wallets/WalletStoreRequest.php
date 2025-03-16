@@ -46,7 +46,7 @@ class WalletStoreRequest extends Request
             'wallets.code'          => Str::random(8),
             'wallets.title'         => Arr::get($row, 'title'),
             'wallets.unit'          => Arr::get($row, 'unit'),
-            'wallets.properties.decimalPlaces' => Arr::get($row, 'unitConfigurable'),
+            'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
             'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),
             'wallets.status'        => 1,
             'wallet_users.name'     => Arr::get($row, 'user.name'),
