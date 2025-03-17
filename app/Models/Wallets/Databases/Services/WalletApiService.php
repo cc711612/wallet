@@ -57,18 +57,29 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('per_page')) === false) {
             $pageCount = $this->getRequestByKey('per_page');
         }
-        $walletUsers = app(WalletUserApiService::class)
-            ->getWalletUserByUserId($this->getRequestByKey('users.id'));
-        $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+        
         $result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
                     $query->select(['id', 'name']);
                 },
             ])
-            ->where(function ($query) use ($walletIds) {
-                $query->whereIn('id', $walletIds)
-                    ->orWhere('user_id', $this->getRequestByKey('users.id'));
+            ->where(function ($query) {
+                $walletUsers = app(WalletUserApiService::class)
+                    ->getWalletUserByUserId($this->getRequestByKey('users.id'));
+                $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+                // 訪客帳本
+                $isGuest = $this->getRequestByKey('wallets.is_guest');
+                if (!is_null($isGuest)) {
+                    if ($isGuest == 0) {
+                        $query->where('user_id', $this->getRequestByKey('users.id'));
+                    } else {
+                        $query->whereIn('id', $walletIds);
+                    }
+                } else {
+                    $query->whereIn('id', $walletIds)
+                        ->orWhere('user_id', $this->getRequestByKey('users.id'));
+                }
             })
             ->when(is_numeric($this->getRequestByKey('wallets.status')), function ($query) {
                 return $query->where('status', $this->getRequestByKey('wallets.status'));

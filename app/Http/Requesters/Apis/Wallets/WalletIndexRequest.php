@@ -35,7 +35,7 @@ class WalletIndexRequest extends Request
             'users.id' => Arr::get($row, 'user.id'),
             'page_count' => Arr::get($row, 'page_count'),
             'wallets.status' => Arr::get($row, 'status'),
-            'wallets.is_guest' => (bool) Arr::get($row, 'is_guest'),
+            'wallets.is_guest' => Arr::get($row, 'is_guest'),
         ];
     }
 }
