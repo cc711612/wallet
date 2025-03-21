@@ -57,18 +57,29 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('per_page')) === false) {
             $pageCount = $this->getRequestByKey('per_page');
         }
-        $walletUsers = app(WalletUserApiService::class)
-            ->getWalletUserByUserId($this->getRequestByKey('users.id'));
-        $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+        
         $result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
                     $query->select(['id', 'name']);
                 },
             ])
-            ->where(function ($query) use ($walletIds) {
-                $query->whereIn('id', $walletIds)
-                    ->orWhere('user_id', $this->getRequestByKey('users.id'));
+            ->where(function ($query) {
+                $walletUsers = app(WalletUserApiService::class)
+                    ->getWalletUserByUserId($this->getRequestByKey('users.id'));
+                $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+                // 訪客帳本
+                $isGuest = $this->getRequestByKey('wallets.is_guest');
+                if (!is_null($isGuest)) {
+                    if ($isGuest == 0) {
+                        $query->where('user_id', $this->getRequestByKey('users.id'));
+                    } else {
+                        $query->whereIn('id', $walletIds);
+                    }
+                } else {
+                    $query->whereIn('id', $walletIds)
+                        ->orWhere('user_id', $this->getRequestByKey('users.id'));
+                }
             })
             ->when(is_numeric($this->getRequestByKey('wallets.status')), function ($query) {
                 return $query->where('status', $this->getRequestByKey('wallets.status'));
@@ -124,16 +135,17 @@ class WalletApiService extends Service
             ])
             ->find($this->getRequestByKey('wallets.id'));
 
-        $createTimes = $result->wallet_details
-            ->pluck('created_at')
-            ->map(function ($item) {
-                return $item->format('Y-m-d');
-            })
-            ->uniqueStrict()
-            ->values();
+        // $createTimes = $result->wallet_details
+        //     ->pluck('created_at')
+        //     ->map(function ($item) {
+        //         return $item->format('Y-m-d');
+        //     })
+        //     ->uniqueStrict()
+        //     ->values();
 
-        $exchangeRateService = app(ExchangeRateService::class);
-        $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
+        // $exchangeRateService = app(ExchangeRateService::class);
+        // $exchangeRates = $exchangeRateService->getExchangeRateByCurrencyAndDate($createTimes);
+        $exchangeRates = collect([]);
         $result->wallet_details = $result->wallet_details->map(function ($walletDetail) use ($exchangeRates) {
             $walletDetail->exchange_rates = $exchangeRates
                 ->get($walletDetail->created_at->format('Y-m-d'), collect([]))
