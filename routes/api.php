@@ -15,6 +15,7 @@ use App\Http\Controllers\Apis\Wallets\WalletController;
 use App\Http\Controllers\Apis\Wallets\WalletDetailController;
 use App\Http\Controllers\Apis\Wallets\WalletUserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GeminiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,6 +128,15 @@ Route::group(['middleware' => [], 'as' => 'api.'], function () {
         });
     });
 });
+
+// Gemini API Routes
+Route::prefix('gemini')->group(function () {
+    Route::post('/generate', [GeminiController::class, 'generateContent']);
+    Route::post('/stream', [GeminiController::class, 'streamContent']);
+    Route::post('/chat', [GeminiController::class, 'chat']);
+    Route::get('/models', [GeminiController::class, 'listModels']);
+});
+
 Route::fallback(function () {
     return response([
         'code' => 404,
