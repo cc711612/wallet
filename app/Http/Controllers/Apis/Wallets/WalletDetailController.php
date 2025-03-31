@@ -259,7 +259,7 @@ class WalletDetailController extends ApiController
             $requester,
             'wallet_user.is_admin'
         ) != 1) {
-            return $this->response()->errorUnauthorized("非admin");
+            return $this->response()->errorBadRequest("非admin");
         }
         try {
             # 刪除
