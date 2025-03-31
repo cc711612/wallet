@@ -69,18 +69,27 @@ class LineWebhookJob implements ShouldQueue
         }
         $event = current($events);
         $lineUserId = $event['source']['userId'] ?? null;
+        $replyToken = $event['replyToken'] ?? null;
         $social = SocialEntity::where('social_type', SocialType::SOCIAL_TYPE_LINE)
             ->where('social_type_value', $lineUserId)
             ->first();
         if (empty($social)) {
             Log::channel('bot')->info(sprintf("%s No social found", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
             return;
         }
         $userId = $social->users->first()->id ?? null;
-        $replyToken = $event['replyToken'] ?? null;
+
+        if (is_null($userId)) {
+            Log::channel('bot')->error(sprintf("%s User ID not found for social entity", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
+            return;
+        }
+
         $messageType = $event['message']['type'] ?? null;
         if ($messageType != 'text') {
             Log::channel('bot')->info(sprintf("%s No text message found", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('請傳送文字訊息'));
             return;
         }
         $message = $event['message']['text'] ?? null;
