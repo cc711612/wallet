@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Str;
 
 class WalletApiService extends Service
@@ -57,7 +58,7 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('per_page')) === false) {
             $pageCount = $this->getRequestByKey('per_page');
         }
-        
+
         $result = $this->getEntity()
             ->with([
                 UserEntity::Table => function ($query) {
@@ -89,6 +90,34 @@ class WalletApiService extends Service
         return $result
             ->orderByDesc('updated_at')
             ->paginate($pageCount);
+    }
+
+    public function getWalletByUserId(int $userId): Collection
+    {
+        $result = $this->getEntity()
+            ->where(function ($query) use ($userId) {
+                $walletUsers = app(WalletUserApiService::class)
+                    ->getWalletUserByUserId($userId);
+                $walletIds = $walletUsers->where('is_admin', 0)->pluck('wallet_id')->toArray();
+                // 訪客帳本
+                $isGuest = $this->getRequestByKey('wallets.is_guest');
+                if (!is_null($isGuest)) {
+                    if ($isGuest == 0) {
+                        $query->where('user_id', $userId);
+                    } else {
+                        $query->whereIn('id', $walletIds);
+                    }
+                } else {
+                    $query->whereIn('id', $walletIds)
+                        ->orWhere('user_id', $userId);
+                }
+            })
+            ->where('status', 1)
+            ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
+
+        return $result
+            ->orderByDesc('updated_at')
+            ->get();
     }
 
     /**
