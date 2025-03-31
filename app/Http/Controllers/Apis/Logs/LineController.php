@@ -9,6 +9,8 @@ namespace App\Http\Controllers\Apis\Logs;
 
 use App\Http\Controllers\ApiController;
 use App\Jobs\LineNotifyJob;
+use App\Models\Socials\Contracts\Constants\SocialType;
+use App\Models\Socials\Databases\Services\LineService;
 use App\Models\Users\Databases\Entities\UserEntity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +29,12 @@ class LineController extends ApiController
      */
     public function store(Request $request)
     {
-        Log::channel('bot')->info($request->toArray());
+        Log::channel('bot')->info(json_encode($request->toArray()));
+        /**
+         * @var LineService $lineService
+         */
+        $lineService = app(LineService::class);
+        $lineService->webhook($request->toArray(), SocialType::SOCIAL_TYPE_LINE);
         return $this->response()->success();
     }
 
