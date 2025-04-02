@@ -21,6 +21,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Requesters\Apis\Wallets\WalletBindRequest;
 use App\Http\Resources\WalletResource;
 use App\Http\Validators\Apis\Wallets\Auth\LoginValidator;
+use App\Models\Wallets\Databases\Services\WalletApiRelayService;
 use App\Models\Wallets\Databases\Services\WalletUserApiService;
 
 class WalletController extends ApiController
@@ -49,7 +50,13 @@ class WalletController extends ApiController
     public function index(Request $request)
     {
         $requester = (new WalletIndexRequest($request));
-
+        if (config('services.walletApi.relayEnable')) {
+            $response = app(WalletApiRelayService::class)
+                ->getWallets(
+                    data_get($requester->toArray(), 'users.id')
+                );
+            return $this->response()->success($response['data'], $response['message'], $response['code']);
+        }
         $wallets = $this->wallet_api_service
             ->setPageCount($requester->page_count)
             ->setRequest($requester->toArray())

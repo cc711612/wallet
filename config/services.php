@@ -53,4 +53,9 @@ return [
         'key' => env('NOTIFICATION_KEY'),
         'key_path' => env('NOTIFICATION_KEY_PATH'),
     ],
+
+    'walletApi' => [
+        'relayEnable' => env('WALLET_API_RELAY_ENABLE', false),
+        'domain' => env('WALLET_API_DOMAIN'),
+    ]
 ];
