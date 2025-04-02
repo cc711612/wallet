@@ -7,6 +7,7 @@ use App\Models\Socials\Contracts\Constants\SocialType;
 use App\Models\Socials\Databases\Entities\SocialEntity;
 use App\Models\Socials\Databases\Services\LineService;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
+use App\Models\Wallets\Databases\Services\WalletApiService;
 use App\Services\GeminiService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -68,18 +69,27 @@ class LineWebhookJob implements ShouldQueue
         }
         $event = current($events);
         $lineUserId = $event['source']['userId'] ?? null;
+        $replyToken = $event['replyToken'] ?? null;
         $social = SocialEntity::where('social_type', SocialType::SOCIAL_TYPE_LINE)
             ->where('social_type_value', $lineUserId)
             ->first();
         if (empty($social)) {
             Log::channel('bot')->info(sprintf("%s No social found", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
             return;
         }
         $userId = $social->users->first()->id ?? null;
-        $replyToken = $event['replyToken'] ?? null;
+
+        if (is_null($userId)) {
+            Log::channel('bot')->error(sprintf("%s User ID not found for social entity", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
+            return;
+        }
+
         $messageType = $event['message']['type'] ?? null;
         if ($messageType != 'text') {
             Log::channel('bot')->info(sprintf("%s No text message found", get_class($this)));
+            $this->sentMessage($replyToken, new TextMessageBuilder('請傳送文字訊息'));
             return;
         }
         $message = $event['message']['text'] ?? null;
@@ -89,9 +99,8 @@ class LineWebhookJob implements ShouldQueue
         $lineService = app(LineService::class);
 
         if (Str::startsWith($message, '/wallets')) {
-            $wallets = WalletEntity::where('user_id', 1)
-                ->orderByDesc('updated_at')
-                ->get();
+            $wallets = app(WalletApiService::class)
+                ->getWalletByUserId($userId);
             $columns = [];
 
             foreach ($wallets as $wallet) {
@@ -151,7 +160,7 @@ class LineWebhookJob implements ShouldQueue
         $geminiService = app(GeminiService::class);
         $response = $geminiService->getChatResult($messages);
         // 去掉 "json "，保留 { 開頭的部分
-        $cleanJson = str_replace(['json','`'], ['',''], $response);
+        $cleanJson = str_replace(['json', '`'], ['', ''], $response);
         // 去掉多餘的空格和換行
         // 將字串轉換為 JSON 格式
         $jsonData = json_decode($cleanJson, true);
@@ -196,11 +205,17 @@ class LineWebhookJob implements ShouldQueue
             $httpClient = new CurlHTTPClient(config('bot.line.access_token'));
             $bot = new LINEBot($httpClient, ['channelSecret' => config('bot.line.channel_secret')]);
             $bot->replyMessage($replayToken, $message);
-            Log::channel('bot')->info(sprintf("%s SUCCESS params : %s", get_class($this),
-                json_encode($this->params, JSON_UNESCAPED_UNICODE)));
+            Log::channel('bot')->info(sprintf(
+                "%s SUCCESS params : %s",
+                get_class($this),
+                json_encode($this->params, JSON_UNESCAPED_UNICODE)
+            ));
         } catch (\Exception $exception) {
-            Log::channel('bot')->error(sprintf("%s Error params : %s", get_class($this),
-                json_encode($exception, JSON_UNESCAPED_UNICODE)));
+            Log::channel('bot')->error(sprintf(
+                "%s Error params : %s",
+                get_class($this),
+                json_encode($exception, JSON_UNESCAPED_UNICODE)
+            ));
         }
     }
 }
