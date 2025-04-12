@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:run --only-db --disable-notifications')->daily();
         $schedule->command('backup:clean --disable-notifications')->daily();
         $schedule->command('command:auto_create_wallet')->monthlyOn('1');
-        if (env('APP_ENV') == 'production') {
+        if (config('app.env') == 'production') {
             $schedule->command('command:auto_calculate_wallet')->monthlyOn('1');
         }
     }

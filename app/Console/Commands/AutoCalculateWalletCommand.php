@@ -2,12 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\LineNotifyJob;
-use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
+use App\Jobs\SendLineRemindMessage;
 use Illuminate\Console\Command;
-use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
-use App\Models\Wallets\Databases\Entities\WalletUserEntity;
+use App\Models\Wallets\Databases\Services\WalletApiService;
 use Illuminate\Support\Carbon;
 
 
@@ -32,7 +30,7 @@ class AutoCalculateWalletCommand extends Command
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(private WalletApiService $walletApiService)
     {
         parent::__construct();
     }
@@ -54,46 +52,13 @@ class AutoCalculateWalletCommand extends Command
             ])
             ->first();
         if ($wallet) {
-            /**
-             * @var Collection
-             */
-            $walletDetails = $wallet->wallet_details;
-            /**
-             * @var Collection
-             */
-            $walletUsers = $wallet->wallet_users;
-            $messages[] = "帳本名稱: {$wallet->title}";
-            $total = 0;
-            $walletGroupByTypes = $walletDetails->groupBy('type');
-            $publicWalletDetailTotal = $walletGroupByTypes->get(
-                WalletDetailTypes::class::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE,
-                collect()
-            )->where('symbol_operation_type_id', SymbolOperationTypes::class::SYMBOL_OPERATION_TYPE_DECREMENT)
-                ->sum('value');
-            $total += $publicWalletDetailTotal;
-            $messages[] = "公費總支出金額: {$publicWalletDetailTotal}";
-            $privateWalletDetailGroupByPaymentUserId = $walletGroupByTypes->get(
-                WalletDetailTypes::class::WALLET_DETAIL_TYPE_GENERAL_EXPENSE,
-                collect()
-            )->groupBy('payment_wallet_user_id');
-            foreach ($walletUsers as $walletUser) {
-                $messages[] = "帳本成員: {$walletUser->name}";
-                $userPaymentTotal = $privateWalletDetailGroupByPaymentUserId->get($walletUser->id, collect())
-                    ->where('symbol_operation_type_id', SymbolOperationTypes::class::SYMBOL_OPERATION_TYPE_DECREMENT)
-                    ->sum('value');
-                $total += $userPaymentTotal;
-                $messages[] = "帳本成員總代墊金額: {$userPaymentTotal}";
+            $messages = $this->walletApiService->calculateAndNotifyWalletExpenses($wallet);
+            if (!empty($messages)) {
+                SendLineRemindMessage::dispatch([
+                    'userIds' => ['U1d40789aa8461e74ead62181b1abc442'],
+                    'message' => implode("\r\n", $messages)
+                ]);
             }
-
-            $messages[] = "總支出金額: {$total}";
-            $messages[] = "結算時間: " . Carbon::now()->format('Y-m-d H:i:s');
-            $walletUsers->each(function (WalletUserEntity $walletUser) use ($messages) {
-                if ($walletUser->users && $walletUser->users->notify_token) {
-                    $user = $walletUser->users;
-                    // notify
-                    LineNotifyJob::dispatch($user->id, implode("\r\n", $messages));
-                }
-            });
         }
     }
 }
