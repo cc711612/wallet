@@ -6,7 +6,6 @@ services:
         restart: always
         container_name: ${PROJECT_NAME}-php-fpm
         links:
-            - "mysql"
             - "redis"
         environment:
             - TZ=Asia/Taipei
@@ -39,18 +38,3 @@ services:
         container_name: ${PROJECT_NAME}-redis
         environment:
             - TZ=Asia/Taipei
-    mysql:
-        image: mariadb
-        restart: always
-        container_name: ${PROJECT_NAME}-mysql
-        volumes:
-            - "./mysql/data:/var/lib/mysql"
-            - "./mysql/logs:/logs"
-        environment:
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-            - TZ=Asia/Taipei
-        ports:
-            - "${MYSQL_PORT}:3306"
-        command:
-            - --character-set-server=utf8mb4
-            - --collation-server=utf8mb4_unicode_ci
