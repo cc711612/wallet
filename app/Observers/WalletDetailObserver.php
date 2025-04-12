@@ -68,7 +68,8 @@ class WalletDetailObserver
                     '記帳金額：' . number_format($walletDetailEntity->value),
                 ];
                 if ($user) {
-                    LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
+                    // 拔除 已停用 line notify
+                    // LineNotifyJob::dispatch($user->id, implode("\r\n", $contents));
                 }
                 // notify
                 NotificationFCM::dispatch($walletDetailEntity->id, $walletUser->id, implode("\r\n", $contents));

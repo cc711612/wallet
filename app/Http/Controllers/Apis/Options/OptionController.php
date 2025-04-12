@@ -11,6 +11,7 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Http;
 use App\Http\Resources\OptionResource;
 use App\Models\Categories\Entities\CategoryEntity;
+use App\Models\Wallets\Databases\Services\WalletApiRelayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -212,7 +213,11 @@ class OptionController extends ApiController
         if (Cache::has($cacheKey)) {
             return $this->response()->success(Cache::get($cacheKey));
         }
-        $category = CategoryEntity::get();
+        if (config('services.walletApi.relayEnable')) {
+            $category = app(WalletApiRelayService::class)->getCategories();
+        } else {
+            $category = CategoryEntity::get();
+        }
         Cache::put($cacheKey, $category, now()->addHours(1));
         return $this->response()->success($category);
     }

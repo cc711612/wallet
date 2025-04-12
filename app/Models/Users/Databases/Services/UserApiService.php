@@ -11,6 +11,8 @@ use App\Concerns\Databases\Service;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Users\Databases\Entities\UserEntity;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Firebase\JWT\JWT;
 
 class UserApiService extends Service
 {
@@ -65,5 +67,44 @@ class UserApiService extends Service
     {
         $cacheKey = 'user.' . $id;
         Cache::forget($cacheKey);
+    }
+
+    public function getUserById(int $id)
+    {
+        $user = $this->getEntity()->find($id);
+        $user->jwt = $this->getJwtByUser($user);
+
+        return $user;
+    }
+
+    public function getUserJwtById(int $id)
+    {
+        $user = $this->getEntity()->find($id);
+        if ($user) {
+            return $this->getJwtByUser($user);
+        }
+
+        return null;
+    }
+
+    public function getJwtByUser($user)
+    {
+        $key = config('app.name');
+        $payload = [
+            'iss' => config('app.url'),
+            'aud' => 'https://easysplit.usongrat.tw',
+            'iat' => now()->timestamp,
+            'exp' => now()->addYear()->timestamp,
+            'nbf' => now()->timestamp,
+            'user' => [
+                'id' => $user->id,
+                'account' => $user->account,
+                'name' => $user->name,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ],
+        ];
+
+        return JWT::encode($payload, $key, 'HS256');
     }
 }

@@ -127,11 +127,15 @@ class LineWebhookJob implements ShouldQueue
             if ($wallet) {
                 $lineService->connectedWalletId($userId, $wallet->id);
                 $message = '已選擇帳本: ' . $wallet->title;
+                $social->wallet_id = $wallet->id;
+                $social->save();
             }
+            
             $this->sentMessage($replyToken, new TextMessageBuilder($message));
             return;
         }
-        $walletId = $lineService->getConnectedWalletId($userId);
+        // 假設 cache 沒有的話
+        $walletId = $lineService->getConnectedWalletId($userId) ?? $social->wallet_id;
         $wallet = WalletEntity::find($walletId);
 
         if (empty($wallet)) {

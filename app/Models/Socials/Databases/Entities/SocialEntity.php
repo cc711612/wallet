@@ -29,6 +29,7 @@ class SocialEntity extends Model
         'email',
         'social_type',
         'social_type_value',
+        'wallet_id',
         'image',
         'token',
         'followed',
