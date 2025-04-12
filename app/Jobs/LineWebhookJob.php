@@ -147,6 +147,15 @@ class LineWebhookJob implements ShouldQueue
             $message = Str::after($message, '/add ');
             $this->generateAddWalletMessage($message, $replyToken, $wallet, $userId);
         }
+
+        if (Str::startsWith($message, '/calculate ') || Str::contains($message, '結算')) {
+            /**
+             * @var WalletApiService $walletApiService
+             */
+            $walletApiService = app(WalletApiService::class);
+            $messages = $walletApiService->calculateAndNotifyWalletExpenses($wallet); 
+            $this->sentMessage($replyToken, new TextMessageBuilder(implode("\r\n", $messages)));
+        }
     }
 
     private function generateAddWalletMessage($userMessage, $replyToken, $wallet, $userId)

@@ -19,16 +19,70 @@ use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Wallets\Auth\WalletUserAuthCacheTrait;
 use App\Models\Wallets\Contracts\Constants\WalletDetailTypes;
+use App\Models\SymbolOperationTypes\Contracts\Constants\SymbolOperationTypes;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Traits\Caches\CacheTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Str;
+use Carbon\Carbon;
 
 class WalletApiService extends Service
 {
     use WalletUserAuthCacheTrait, CacheTrait;
+
+    /**
+     * 計算錢包的詳細支出並發送通知
+     *
+     * @param WalletEntity $wallet
+     * @return array
+     */
+    public function calculateAndNotifyWalletExpenses(WalletEntity $wallet)
+    {
+        $messages = [];
+        /**
+         * @var Collection
+         */
+        $walletDetails = $wallet->wallet_details;
+        /**
+         * @var Collection
+         */
+        $walletUsers = $wallet->wallet_users;
+        $messages[] = "帳本名稱: {$wallet->title}";
+        $total = 0;
+
+        // 計算公費支出
+        $walletGroupByTypes = $walletDetails->groupBy('type');
+        $publicWalletDetailTotal = $walletGroupByTypes->get(
+            WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE,
+            collect()
+        )->where('symbol_operation_type_id', SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT)
+            ->sum('value');
+        $total += $publicWalletDetailTotal;
+        $messages[] = "公費總支出金額: {$publicWalletDetailTotal}";
+
+        // 計算個人支出
+        $privateWalletDetailGroupByPaymentUserId = $walletGroupByTypes->get(
+            WalletDetailTypes::WALLET_DETAIL_TYPE_GENERAL_EXPENSE,
+            collect()
+        )->groupBy('payment_wallet_user_id');
+
+        // 計算每個用戶的支出
+        foreach ($walletUsers as $walletUser) {
+            $messages[] = "帳本成員: {$walletUser->name}";
+            $userPaymentTotal = $privateWalletDetailGroupByPaymentUserId->get($walletUser->id, collect())
+                ->where('symbol_operation_type_id', SymbolOperationTypes::SYMBOL_OPERATION_TYPE_DECREMENT)
+                ->sum('value');
+            $total += $userPaymentTotal;
+            $messages[] = "帳本成員總代墊金額: {$userPaymentTotal}";
+        }
+
+        $messages[] = "總支出金額: {$total}";
+        $messages[] = "結算時間: " . Carbon::now()->format('Y-m-d H:i:s');
+
+        return $messages;
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Model
