@@ -239,6 +239,7 @@ class LineWebhookJob implements ShouldQueue
         preg_match('/categoryId=(\d+), amount=(\d+), title=([^,]+)/', $cleanResponse, $matches);
         if (count($matches) < 4) {
             Log::channel('bot')->error('無法解析回應: ' . $cleanResponse);
+            $this->sentMessage($replyToken, new TextMessageBuilder('無法解析回應，請檢查格式'));
             return;
         }
         $categoryId = $matches[1];
