@@ -64,127 +64,165 @@ class LineWebhookJob implements ShouldQueue
     {
         $events = $this->params['events'] ?? [];
         if (empty($events)) {
-            Log::channel('bot')->info(sprintf("%s No events found", get_class($this)));
+            $this->logAndReply('No events found', '無法找到事件');
             return;
         }
+
         $event = current($events);
         $lineUserId = $event['source']['userId'] ?? null;
         $replyToken = $event['replyToken'] ?? null;
-        $social = SocialEntity::where('social_type', SocialType::SOCIAL_TYPE_LINE)
-            ->where('social_type_value', $lineUserId)
-            ->first();
+
+        $social = $this->getSocialEntity($lineUserId);
         if (empty($social)) {
-            Log::channel('bot')->info(sprintf("%s No social found", get_class($this)));
-            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
+            $this->logAndReply('No social found', '無法找到對應的使用者，請確認您的帳號是否已綁定。', $replyToken);
             return;
         }
-        $userId = $social->users->first()->id ?? null;
 
+        $userId = $social->users->first()->id ?? null;
         if (is_null($userId)) {
-            Log::channel('bot')->error(sprintf("%s User ID not found for social entity", get_class($this)));
-            $this->sentMessage($replyToken, new TextMessageBuilder('無法找到對應的使用者，請確認您的帳號是否已綁定。'));
+            $this->logAndReply('User ID not found for social entity', '無法找到對應的使用者，請確認您的帳號是否已綁定。', $replyToken);
             return;
         }
 
         $messageType = $event['message']['type'] ?? null;
         if ($messageType != 'text') {
-            Log::channel('bot')->info(sprintf("%s No text message found", get_class($this)));
-            $this->sentMessage($replyToken, new TextMessageBuilder('請傳送文字訊息'));
+            $this->logAndReply('No text message found', '請傳送文字訊息', $replyToken);
             return;
         }
+
         $message = $event['message']['text'] ?? null;
-        /**
-         * @var LineService $lineService
-         */
         $lineService = app(LineService::class);
 
-        if (Str::startsWith($message, '/wallets')) {
-            $wallets = app(WalletApiService::class)
-                ->getWalletByUserId($userId);
-            $columns = [];
-
-            foreach ($wallets as $wallet) {
-                if (count($columns) >= 10) {
-                    break; // 限制最多 10 個項目
-                }
-                $actions = array(
-                    new MessageTemplateActionBuilder("選擇此帳本", "/selected " . $wallet->code),
-                );
-                $column = new ConfirmTemplateBuilder($wallet->title, $actions);
-                $columns[] = $column;
-            }
-            $carousel = new CarouselTemplateBuilder($columns);
-            $textMessageBuilder = new TemplateMessageBuilder("請在手機中查看此訊息", $carousel);
-            $this->sentMessage($replyToken, $textMessageBuilder);
+        if ($this->isWalletCommand($message)) {
+            $this->handleWalletCommand($message, $replyToken, $userId, $social);
             return;
         }
 
-        // /selected
-        if (Str::startsWith($message, '/selected ')) {
-            $code = Str::after($message, '/selected ');
-            $wallet = WalletEntity::where('code', $code)->first();
-            $message = '查無此帳本' . $code . '，請重新選擇';
-            if ($wallet) {
-                $lineService->connectedWalletId($userId, $wallet->id);
-                $message = '已選擇帳本: ' . $wallet->title;
-                $social->wallet_id = $wallet->id;
-                $social->save();
-            }
-            
-            $this->sentMessage($replyToken, new TextMessageBuilder($message));
-            return;
-        }
-        // 假設 cache 沒有的話
-        $walletId = $lineService->getConnectedWalletId($userId) ?? $social->wallet_id;
-        $wallet = WalletEntity::find($walletId);
-
+        $wallet = $this->getConnectedWallet($lineService, $userId, $social);
         if (empty($wallet)) {
             $this->sentMessage($replyToken, new TextMessageBuilder('請先選擇帳本'));
             return;
         }
 
-        if (Str::startsWith($message, '/add ')) {
-            $message = Str::after($message, '/add ');
-            $this->generateAddWalletMessage($message, $replyToken, $wallet, $userId);
+        if ($this->isAddCommand($message)) {
+            $this->handleAddCommand($message, $replyToken, $wallet, $userId);
+        } elseif ($this->isCalculateCommand($message)) {
+            $this->handleCalculateCommand($replyToken, $wallet);
+        }
+    }
+
+    private function logAndReply($logMessage, $replyMessage, $replyToken = null)
+    {
+        Log::channel('bot')->info(sprintf("%s %s", get_class($this), $logMessage));
+        if ($replyToken) {
+            $this->sentMessage($replyToken, new TextMessageBuilder($replyMessage));
+        }
+    }
+
+    private function getSocialEntity($lineUserId)
+    {
+        return SocialEntity::where('social_type', SocialType::SOCIAL_TYPE_LINE)
+            ->where('social_type_value', $lineUserId)
+            ->first();
+    }
+
+    private function isWalletCommand($message)
+    {
+        return Str::startsWith($message, '/wallets') || Str::contains($message, ['帳本', '列表']);
+    }
+
+    private function handleWalletCommand($message, $replyToken, $userId, $social)
+    {
+        $wallets = app(WalletApiService::class)->getWalletByUserId($userId);
+        $columns = [];
+
+        foreach ($wallets as $wallet) {
+            if (count($columns) >= 10) {
+                break;
+            }
+            $actions = [new MessageTemplateActionBuilder("選擇此帳本", "/selected " . $wallet->code)];
+            $columns[] = new ConfirmTemplateBuilder($wallet->title, $actions);
         }
 
-        if (Str::startsWith($message, '/calculate ') || Str::contains($message, '結算')) {
-            /**
-             * @var WalletApiService $walletApiService
-             */
-            $walletApiService = app(WalletApiService::class);
-            $messages = $walletApiService->calculateAndNotifyWalletExpenses($wallet); 
-            $this->sentMessage($replyToken, new TextMessageBuilder(implode("\r\n", $messages)));
+        $carousel = new CarouselTemplateBuilder($columns);
+        $this->sentMessage($replyToken, new TemplateMessageBuilder("請在手機中查看此訊息", $carousel));
+    }
+
+    private function getConnectedWallet($lineService, $userId, $social)
+    {
+        $walletId = $lineService->getConnectedWalletId($userId) ?? $social->wallet_id;
+        return WalletEntity::find($walletId);
+    }
+
+    private function isAddCommand($message)
+    {
+        return Str::startsWith($message, 'add ') || Str::contains($message, '新增');
+    }
+
+    private function handleAddCommand($message, $replyToken, $wallet, $userId)
+    {
+        $message = str_replace(['add ', '新增'], '', $message);
+        $message = trim($message);
+        if (empty($message)) {
+            $this->sentMessage($replyToken, new TextMessageBuilder('請輸入新增的內容'));
+            return;
         }
+        $this->generateAddWalletMessage($message, $replyToken, $wallet, $userId);
+    }
+
+    private function isCalculateCommand($message)
+    {
+        return Str::startsWith($message, '/calculate ') || Str::contains($message, '結算');
+    }
+
+    private function handleCalculateCommand($replyToken, $wallet)
+    {
+        $walletApiService = app(WalletApiService::class);
+        $messages = $walletApiService->calculateAndNotifyWalletExpenses($wallet);
+        $this->sentMessage($replyToken, new TextMessageBuilder(implode("\r\n", $messages)));
     }
 
     private function generateAddWalletMessage($userMessage, $replyToken, $wallet, $userId)
     {
         $messages = [];
         $categories = CategoryEntity::select(['id', 'name'])->get();
-        $messages[] = '以下是帳本的 category 以 json 方式告訴你:' . json_encode($categories) . '請幫我分析後續的內容分別為哪個分類透過 json 告訴我, ex : categoryId: ${categoryId}, amount: ${amount}, title:${title}; 如果遇到分析難度過高,如是食物,請幫我根據現在時間來判斷是否為早午晚餐,不用回傳除了json之外的東西';
+        $messages[] = '以下是帳本的 category，請幫我分析後續的內容分別為哪個分類，格式為: categoryId=${categoryId}, amount=${amount}, title=${title}。如果遇到分析難度過高，例如是食物，請根據現在時間判斷是否為早午晚餐。 現在時間為：' . now()->format('Y-m-d H:i:s') . '。';
+        $messages[] = '分類資料: ' . $categories->map(fn($cat) => "id={$cat->id}, name={$cat->name}")->implode('; ');
         $messages[] = $userMessage;
+
         $messages = array_map(function ($message) {
             return [
                 'role' => 'user',
                 'content' => $message
             ];
         }, $messages);
+
         $geminiService = app(GeminiService::class);
         $response = $geminiService->getChatResult($messages);
-        // 去掉 "json "，保留 { 開頭的部分
-        $cleanJson = str_replace(['json', '`'], ['', ''], $response);
-        // 去掉多餘的空格和換行
-        // 將字串轉換為 JSON 格式
-        $jsonData = json_decode($cleanJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::channel('bot')->error('JSON decode error: ' . json_last_error_msg());
+        // 清理回應內容，確保格式正確
+        $cleanResponse = trim(str_replace(['`'], '', $response));
+        if (empty($cleanResponse)) {
+            Log::channel('bot')->error('GeminiService 回應為空');
             return;
         }
-        $categoryId = $jsonData['categoryId'] ?? null;
+        // categoryId=2, amount=100, title=熊貓外送
+        // 這裡可以使用正則表達式來解析回應
+        // 例如：categoryId=2, amount=100, title=熊貓外送
+        // 這裡假設回應格式為 "categoryId=2, amount=100, title=熊貓外送"
+        // 使用正則表達式來解析回應
+        preg_match('/categoryId=(\d+), amount=(\d+), title=([^,]+)/', $cleanResponse, $matches);
+        if (count($matches) < 4) {
+            Log::channel('bot')->error('無法解析回應: ' . $cleanResponse);
+            return;
+        }
+        $categoryId = $matches[1];
+        $amount = $matches[2];
+        $title = $matches[3];
         $category = $categories->where('id', $categoryId)->first();
         $categoryName = $category ? $category->name : '未知分類';
         $jsonData['categoryName'] = $categoryName;
+        $jsonData['amount'] = $amount;
+        $jsonData['title'] = $title;
         // queue create wallet detail
         CreateWalletDetailJob::dispatch($userId, $wallet->id, $jsonData);
         // 回傳欄位的資料 根據 \n 來換行
@@ -197,6 +235,7 @@ class LineWebhookJob implements ShouldQueue
         foreach ($jsonData as $key => $value) {
             $message .= $key . ': ' . $value . "\n";
         }
+
         $columns[] = new ConfirmTemplateBuilder($message, $actions);
 
         $carousel = new CarouselTemplateBuilder($columns);
