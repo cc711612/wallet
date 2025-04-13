@@ -98,6 +98,12 @@ class LineWebhookJob implements ShouldQueue
             return;
         }
 
+        // selected wallet.code
+        if ($this->isSelectedCommand($message)) {
+            $this->handleSelectedCommand($message, $replyToken, $userId, $social);
+            return;
+        }
+
         $wallet = $this->getConnectedWallet($lineService, $userId, $social);
         if (empty($wallet)) {
             $this->sentMessage($replyToken, new TextMessageBuilder('請先選擇帳本'));
@@ -129,6 +135,26 @@ class LineWebhookJob implements ShouldQueue
     private function isWalletCommand($message)
     {
         return Str::startsWith($message, '/wallets') || Str::contains($message, ['帳本', '列表']);
+    }
+
+    private function isSelectedCommand($message)
+    {
+        return Str::startsWith($message, '/selected');
+    }
+
+    private function handleSelectedCommand($message, $replyToken, $userId, $social)
+    {
+        $code = Str::after($message, '/selected ');
+        $wallet = WalletEntity::where('code', $code)->first();
+        if ($wallet) {
+            app(LineService::class)->connectedWalletId($userId, $wallet->id);
+            $message = '已選擇帳本: ' . $wallet->title;
+            $social->wallet_id = $wallet->id;
+            $social->save();
+        } else {
+            $message = '查無此帳本' . $code . '，請重新選擇';
+        }
+        $this->sentMessage($replyToken, new TextMessageBuilder($message));
     }
 
     private function handleWalletCommand($message, $replyToken, $userId, $social)
