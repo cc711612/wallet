@@ -14,7 +14,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use LINE\LINEBot;
@@ -31,34 +30,23 @@ class LineWebhookJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @var
+     * @var array $params 任務參數
      */
-    private $userIds; // 修改為小駝峰
-    /**
-     * @var
-     */
-    private $message; // 保持不變
-    /**
-     * @var
-     */
-    private $params; // 保持不變
+    private $params;
 
     /**
-     * Create a new job instance.
+     * 建構子：初始化任務
      *
-     * @return void
+     * @param array $params
      */
     public function __construct($params)
     {
-        $this
-            ->onQueue('send_message');
+        $this->onQueue('send_message'); // 指定任務隊列
         $this->params = $params;
     }
 
     /**
-     * Execute the job.
-     *
-     * @return void
+     * 執行任務的主方法
      */
     public function handle()
     {
@@ -85,7 +73,7 @@ class LineWebhookJob implements ShouldQueue
         }
 
         $messageType = $event['message']['type'] ?? null;
-        if ($messageType != 'text') {
+        if ($messageType !== 'text') {
             $this->logAndReply('No text message found', '請傳送文字訊息', $replyToken);
             return;
         }
@@ -93,38 +81,40 @@ class LineWebhookJob implements ShouldQueue
         $message = $event['message']['text'] ?? null;
         $lineService = app(LineService::class);
 
+        // 判斷訊息類型並執行對應的處理邏輯
         if ($this->isWalletCommand($message)) {
             $this->handleWalletCommand($message, $replyToken, $userId, $social);
-            return;
-        }
-
-        // selected wallet.code
-        if ($this->isSelectedCommand($message)) {
+        } elseif ($this->isSelectedCommand($message)) {
             $this->handleSelectedCommand($message, $replyToken, $userId, $social);
-            return;
-        }
+        } else {
+            $wallet = $this->getConnectedWallet($lineService, $userId, $social);
+            if (empty($wallet)) {
+                $this->sentMessage($replyToken, new TextMessageBuilder('請先選擇帳本'));
+                return;
+            }
 
-        $wallet = $this->getConnectedWallet($lineService, $userId, $social);
-        if (empty($wallet)) {
-            $this->sentMessage($replyToken, new TextMessageBuilder('請先選擇帳本'));
-            return;
-        }
-
-        if ($this->isAddCommand($message)) {
-            $this->handleAddCommand($message, $replyToken, $wallet, $userId);
-        } elseif ($this->isCalculateCommand($message)) {
-            $this->handleCalculateCommand($replyToken, $wallet);
+            if ($this->isAddCommand($message)) {
+                $this->handleAddCommand($message, $replyToken, $wallet, $userId);
+            } elseif ($this->isCalculateCommand($message)) {
+                $this->handleCalculateCommand($replyToken, $wallet);
+            }
         }
     }
 
+    /**
+     * 紀錄日誌並回覆訊息
+     */
     private function logAndReply($logMessage, $replyMessage, $replyToken = null)
     {
-        Log::channel('bot')->info(sprintf("%s %s", get_class($this), $logMessage));
+        Log::channel('bot')->info(sprintf("%s %s", __CLASS__, $logMessage));
         if ($replyToken) {
             $this->sentMessage($replyToken, new TextMessageBuilder($replyMessage));
         }
     }
 
+    /**
+     * 根據 LINE 使用者 ID 獲取對應的 SocialEntity
+     */
     private function getSocialEntity($lineUserId)
     {
         return SocialEntity::where('social_type', SocialType::SOCIAL_TYPE_LINE)
@@ -132,16 +122,25 @@ class LineWebhookJob implements ShouldQueue
             ->first();
     }
 
+    /**
+     * 判斷是否為帳本指令
+     */
     private function isWalletCommand($message)
     {
         return Str::startsWith($message, '/wallets') || Str::contains($message, ['帳本', '列表']);
     }
 
+    /**
+     * 判斷是否為選擇帳本指令
+     */
     private function isSelectedCommand($message)
     {
         return Str::startsWith($message, '/selected');
     }
 
+    /**
+     * 處理選擇帳本指令
+     */
     private function handleSelectedCommand($message, $replyToken, $userId, $social)
     {
         $code = Str::after($message, '/selected ');
@@ -157,6 +156,9 @@ class LineWebhookJob implements ShouldQueue
         $this->sentMessage($replyToken, new TextMessageBuilder($message));
     }
 
+    /**
+     * 處理帳本列表指令
+     */
     private function handleWalletCommand($message, $replyToken, $userId, $social)
     {
         $wallets = app(WalletApiService::class)->getWalletByUserId($userId);
@@ -174,17 +176,27 @@ class LineWebhookJob implements ShouldQueue
         $this->sentMessage($replyToken, new TemplateMessageBuilder("請在手機中查看此訊息", $carousel));
     }
 
+    /**
+     * 獲取使用者已連結的帳本
+     */
     private function getConnectedWallet($lineService, $userId, $social)
     {
         $walletId = $lineService->getConnectedWalletId($userId) ?? $social->wallet_id;
         return WalletEntity::find($walletId);
     }
 
+    /**
+     * 判斷是否為新增指令
+     */
     private function isAddCommand($message)
     {
-        return Str::startsWith($message, 'add ') || Str::contains($message, '新增');
+        $checkMsg = strtolower($message);
+        return Str::startsWith($checkMsg, 'add') || Str::contains($checkMsg, '新增');
     }
 
+    /**
+     * 處理新增指令
+     */
     private function handleAddCommand($message, $replyToken, $wallet, $userId)
     {
         $message = str_replace(['add ', '新增'], '', $message);
@@ -196,11 +208,17 @@ class LineWebhookJob implements ShouldQueue
         $this->generateAddWalletMessage($message, $replyToken, $wallet, $userId);
     }
 
+    /**
+     * 判斷是否為結算指令
+     */
     private function isCalculateCommand($message)
     {
         return Str::startsWith($message, '/calculate ') || Str::contains($message, '結算');
     }
 
+    /**
+     * 處理結算指令
+     */
     private function handleCalculateCommand($replyToken, $wallet)
     {
         $walletApiService = app(WalletApiService::class);
@@ -208,6 +226,9 @@ class LineWebhookJob implements ShouldQueue
         $this->sentMessage($replyToken, new TextMessageBuilder(implode("\r\n", $messages)));
     }
 
+    /**
+     * 生成新增帳本的訊息
+     */
     private function generateAddWalletMessage($userMessage, $replyToken, $wallet, $userId)
     {
         $messages = [];
@@ -272,18 +293,15 @@ class LineWebhookJob implements ShouldQueue
     }
 
     /**
-     * Send message to line bot
-     * @param string $replayToken
-     * @param MessageBuilder $message
-     * @return void
+     * 發送訊息給 LINE Bot
      */
-    private function sentMessage($replayToken, MessageBuilder $message)
+    private function sentMessage($replyToken, MessageBuilder $message)
     {
         try {
             //實體化line bot物件
             $httpClient = new CurlHTTPClient(config('bot.line.access_token'));
             $bot = new LINEBot($httpClient, ['channelSecret' => config('bot.line.channel_secret')]);
-            $bot->replyMessage($replayToken, $message);
+            $bot->replyMessage($replyToken, $message);
             Log::channel('bot')->info(sprintf(
                 "%s SUCCESS params : %s",
                 get_class($this),
