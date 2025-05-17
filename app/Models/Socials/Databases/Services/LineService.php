@@ -13,6 +13,7 @@ use App\Models\Socials\Contracts\Constants\SocialType;
 use App\Models\Socials\Databases\Entities\SocialEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use GuzzleHttp\Client;
 
 class LineService extends Service
 {
@@ -35,8 +36,27 @@ class LineService extends Service
     {
         if ($socialType === SocialType::SOCIAL_TYPE_LINE) {
             LineWebhookJob::dispatch($data);
+            $this->lineLoading($data['events'][0]['source']['userId'], config('bot.line.access_token'));
         }
         return true;
+    }
+
+    public function lineLoading($userId, $channelAccessToken = null)
+    {
+        $httpClient = new Client([
+            'base_uri' => 'https://api.line.me',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $channelAccessToken,
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+
+        $response = $httpClient->post('/v2/bot/chat/loading/start', [
+            'json' => [
+                'chatId' => $userId,
+                'loadingSeconds' => 5,
+            ],
+        ]);
     }
 
     public function connectedWalletId($userId, $walletId)
