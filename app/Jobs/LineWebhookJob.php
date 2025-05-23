@@ -271,6 +271,7 @@ class LineWebhookJob implements ShouldQueue
         $jsonData['categoryName'] = $categoryName;
         $jsonData['amount'] = $amount;
         $jsonData['title'] = $title;
+        $jsonData['categoryId'] = $categoryId;
         // queue create wallet detail
         CreateWalletDetailJob::dispatch($userId, $wallet->id, $jsonData);
         // 回傳欄位的資料 根據 \n 來換行
