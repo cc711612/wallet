@@ -9,8 +9,6 @@ namespace App\Models\Wallets\Databases\Services;
 
 use App\Concerns\Databases\Service;
 use App\Jobs\WalletUserRegister;
-use App\Models\Categories\Entities\CategoryEntity;
-use App\Models\ExchangeRates\Databases\Services\ExchangeRateService;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Users\Databases\Entities\UserEntity;
@@ -30,6 +28,21 @@ use Carbon\Carbon;
 
 class WalletApiService extends Service
 {
+    /**
+     * 判斷 user 是否有權限刪除錢包（必須是該錢包的 owner）
+     * @param int $userId
+     * @param int $walletId
+     * @return bool
+     */
+    public function canUserDeleteWallet($userId, $walletId)
+    {
+        $wallet = $this->getEntity()->find($walletId);
+        if (!$wallet) {
+            return false;
+        }
+        return $wallet->user_id == $userId;
+    }
+
     use WalletUserAuthCacheTrait, CacheTrait;
 
     /**
@@ -313,7 +326,7 @@ class WalletApiService extends Service
         });
     }
 
-    public function batchInsertWalletUserByWalletId(int $walletId, array $names)
+    public function batchInsertWalletUserByWalletId($walletId, $names)
     {
         return DB::transaction(function () use ($walletId, $names) {
             $inserts = [];
@@ -399,15 +412,22 @@ class WalletApiService extends Service
         if (is_null($this->getRequestByKey('wallets.id'))) {
             return null;
         }
-        return $this->getEntity()
-            ->with([
-                WalletDetailEntity::Table => function ($queryDetail) {
-                    return $queryDetail->with([
-                        WalletUserEntity::Table,
-                    ]);
-                },
-                WalletUserEntity::Table,
-            ])
-            ->find($this->getRequestByKey('wallets.id'));
+        $walletId = $this->getRequestByKey('wallets.id');
+        if (is_null($walletId)) {
+            return null;
+        }
+        $cacheKey = 'wallets_users_details_' . $walletId;
+        return cache()->remember($cacheKey, 600, function () use ($walletId) {
+            return $this->getEntity()
+                ->with([
+                    WalletDetailEntity::Table => function ($queryDetail) {
+                        return $queryDetail->with([
+                            WalletUserEntity::Table,
+                        ]);
+                    },
+                    WalletUserEntity::Table,
+                ])
+                ->find($walletId);
+        });
     }
 }

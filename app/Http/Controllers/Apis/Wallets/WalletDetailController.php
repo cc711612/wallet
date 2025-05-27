@@ -32,32 +32,11 @@ use Illuminate\Support\Arr;
 
 class WalletDetailController extends ApiController
 {
-    /**
-     * @var \App\Models\Wallets\Databases\Services\WalletApiService
-     */
-    private $walletApiService;
-    /**
-     * @var \App\Models\Wallets\Databases\Services\WalletDetailApiService
-     */
-    private $walletDetailApiService;
-    /**
-     * @var \App\Models\Wallets\Databases\Services\WalletUserApiService
-     */
-    private $walletUserApiService;
-
-    /**
-     * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
-     * @param  \App\Models\Wallets\Databases\Services\WalletDetailApiService  $walletDetailApiService
-     * @param  \App\Models\Wallets\Databases\Services\WalletUserApiService  $walletUserApiService
-     */
     public function __construct(
-        WalletApiService $walletApiService,
-        WalletDetailApiService $walletDetailApiService,
-        WalletUserApiService $walletUserApiService
+        private WalletApiService $walletApiService,
+        private WalletDetailApiService $walletDetailApiService,
+        private WalletUserApiService $walletUserApiService
     ) {
-        $this->walletApiService = $walletApiService;
-        $this->walletDetailApiService = $walletDetailApiService;
-        $this->walletUserApiService = $walletUserApiService;
     }
 
     /**
@@ -72,10 +51,8 @@ class WalletDetailController extends ApiController
         $requester = (new WalletDetailIndexRequest($request));
 
         $validate = (new WalletDetailIndexValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
-
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
+        
         $wallet = $this->walletApiService
             ->setRequest($requester->toArray())
             ->getWalletWithDetail();
@@ -102,9 +79,7 @@ class WalletDetailController extends ApiController
         $requester = (new WalletDetailStoreRequest($request));
 
         $validate = (new WalletDetailStoreValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
 
         if (
             Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
@@ -136,8 +111,8 @@ class WalletDetailController extends ApiController
             $this->walletApiService
                 ->setRequest($requester->toArray())
                 ->createWalletDetail();
-        } catch (\Exception $exception) {
-            return $this->response()->fail(json_encode($exception));
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
         }
 
         return $this->response()->success();
@@ -154,9 +129,7 @@ class WalletDetailController extends ApiController
     {
         $requester = (new WalletDetailUpdateRequest($request));
         $validate = (new WalletDetailUpdateValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
         if (
             Arr::get($requester, 'wallet_details.type') == WalletDetailTypes::WALLET_DETAIL_TYPE_PUBLIC_EXPENSE &&
             Arr::get(
@@ -203,8 +176,8 @@ class WalletDetailController extends ApiController
             $this->walletDetailApiService
                 ->setRequest($requester->toArray())
                 ->updateWalletDetail();
-        } catch (\Exception $exception) {
-            return $this->response()->fail(json_encode($exception));
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
         }
         return $this->response()->success();
     }
@@ -246,9 +219,7 @@ class WalletDetailController extends ApiController
         $requester = (new WalletDetailDestroyRequest($request));
 
         $validate = (new WalletDetailDestroyValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
         $detail = $this->walletDetailApiService
             ->find(Arr::get($requester, 'wallet_details.id'));
 
@@ -264,8 +235,8 @@ class WalletDetailController extends ApiController
         try {
             # 刪除
             $detail->update(Arr::get($requester, 'wallet_details'));
-        } catch (\Exception $exception) {
-            return $this->response()->fail(json_encode($exception));
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
         }
         return $this->response()->success();
     }
@@ -282,16 +253,13 @@ class WalletDetailController extends ApiController
         $requester = (new WalletDetailCheckoutRequest($request));
 
         $validate = (new WalletDetailCheckoutValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
         try {
-
             $this->walletDetailApiService
                 ->setRequest($requester->toArray())
                 ->checkoutWalletDetails();
-        } catch (\Exception $exception) {
-            return $this->response()->fail(json_encode($exception));
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
         }
 
         return $this->response()->success();
