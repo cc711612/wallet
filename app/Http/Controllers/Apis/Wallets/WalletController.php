@@ -26,11 +26,14 @@ use App\Models\Wallets\Databases\Services\WalletUserApiService;
 
 class WalletController extends ApiController
 {
+    public bool $relayEnable;
+
     public function __construct(
         private WalletApiService $walletApiService,
         private WalletApiRelayService $walletApiRelayService,
         private WalletUserApiService $walletUserApiService
     ) {
+        $this->relayEnable = config('services.walletApi.relayEnable');
     }
 
     /**
@@ -43,7 +46,7 @@ class WalletController extends ApiController
     public function index(Request $request)
     {
         $requester = (new WalletIndexRequest($request));
-        if (config('services.walletApi.relayEnable')) {
+        if ($this->relayEnable) {
             $response = $this->walletApiRelayService
                 ->getWallets(
                     data_get($requester->toArray(), 'users.id')

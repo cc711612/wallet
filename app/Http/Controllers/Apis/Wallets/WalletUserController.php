@@ -53,9 +53,7 @@ class WalletUserController extends ApiController
         $requester = (new WalletUserIndexRequest($request));
 
         $validate = (new WalletUserIndexValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
 
         $wallet = $this->walletApiService
             ->setRequest($requester->toArray())
@@ -66,19 +64,21 @@ class WalletUserController extends ApiController
 
     public function update(WalletUserUpdateRequest $request)
     {
-        $request = $request->only([
+        $data = $request->only([
             'wallet_user_id',
             'name',
             'notify_enable',
         ]);
-
-        $this->walletUserApiService
-            ->update(
-                $request['wallet_user_id'],
-                $request,
-            );
-
-        return $this->response()->success();
+        try {
+            $this->walletUserApiService
+                ->update(
+                    $data['wallet_user_id'],
+                    $data,
+                );
+            return $this->response()->success();
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
+        }
     }
 
     /**
@@ -93,9 +93,7 @@ class WalletUserController extends ApiController
         $requester = (new WalletUserDestroyRequest($request));
 
         $validate = (new WalletUserDestroyValidator($requester))->validate();
-        if ($validate->fails() === true) {
-            return $this->response()->errorBadRequest($validate->errors()->first());
-        }
+        if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
         $walletUsers = $this->walletUserApiService
             ->setRequest($requester->toArray())
             ->getUserWithDetail();
@@ -108,8 +106,8 @@ class WalletUserController extends ApiController
             $this->walletUserApiService
                 ->setRequest($requester->toArray())
                 ->delete();
-        } catch (\Exception $e) {
-            return $this->response()->fail($e);
+        } catch (\Throwable $e) {
+            return $this->response()->fail($e->getMessage());
         }
 
         return $this->response()->success();
