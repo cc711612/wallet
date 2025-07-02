@@ -152,7 +152,7 @@ class WalletApiService extends Service
             ->when(is_numeric($this->getRequestByKey('wallets.status')), function ($query) {
                 return $query->where('status', $this->getRequestByKey('wallets.status'));
             })
-            ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
+            ->select(['id', 'user_id', 'title', 'code', 'unit', 'mode', 'properties', 'status', 'updated_at', 'created_at']);
 
         return $result
             ->orderByDesc('updated_at')
@@ -180,7 +180,7 @@ class WalletApiService extends Service
                 }
             })
             ->where('status', 1)
-            ->select(['id', 'user_id', 'title', 'code', 'unit', 'properties', 'status', 'updated_at', 'created_at']);
+            ->select(['id', 'user_id', 'title', 'code', 'unit', 'mode', 'properties', 'status', 'updated_at', 'created_at']);
 
         return $result
             ->orderByDesc('updated_at')
