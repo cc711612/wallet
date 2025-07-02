@@ -10,6 +10,7 @@ namespace App\Models\Wallets\Databases\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Users\Databases\Entities\UserEntity;
+use App\Models\Wallets\Enums\LedgerModeType;
 
 class WalletEntity extends Model
 {
@@ -31,6 +32,7 @@ class WalletEntity extends Model
         'unit',
         'code',
         'properties',
+        'mode',
         'status',
         'created_at',
         'updated_at',
@@ -38,7 +40,8 @@ class WalletEntity extends Model
     ];
 
     protected $casts = [
-        'properties' => 'json'
+        'properties' => 'json',
+        'mode' => LedgerModeType::class,
     ];
 
     /**

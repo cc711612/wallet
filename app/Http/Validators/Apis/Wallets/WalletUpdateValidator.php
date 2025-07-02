@@ -3,6 +3,7 @@
 namespace App\Http\Validators\Apis\Wallets;
 
 use App\Concerns\Commons\Abstracts\ValidatorAbstracts;
+use App\Models\Wallets\Enums\LedgerModeType;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use App\Concerns\Databases\Contracts\Request;
@@ -50,6 +51,10 @@ class WalletUpdateValidator extends ValidatorAbstracts
             'wallets.title'   => [
                 'required',
             ],
+            'wallets.mode'    => [
+                'sometimes',
+                Rule::in(LedgerModeType::values()),
+            ],
         ];
     }
 
@@ -66,7 +71,7 @@ class WalletUpdateValidator extends ValidatorAbstracts
             'wallets.user_id.required' => '系統異常',
             'wallets.user_id.exists'   => '系統異常',
             'wallets.title.required'   => '帳簿名稱為必填',
-
+            'wallets.mode.in'          => '帳本模式無效',
         ];
     }
 }
