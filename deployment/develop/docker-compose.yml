@@ -33,3 +33,7 @@ services:
         container_name: ${PROJECT_NAME}-redis
         environment:
             - TZ=Asia/Taipei
+networks:
+    app_net:
+        name: ${PROJECT_NAME}_network
+        driver: bridge
