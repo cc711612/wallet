@@ -3,6 +3,7 @@
 namespace App\Http\Requesters\Apis\Wallets;
 
 use App\Concerns\Databases\Request;
+use App\Models\Wallets\Enums\LedgerModeType;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -21,6 +22,7 @@ class WalletStoreRequest extends Request
             'wallets.code'          => Str::random(8),
             'wallets.title'         => null,
             'wallets.unit'          => 'TWD',
+            'wallets.mode'          => LedgerModeType::MULTI_USER->value,
             'wallets.status'        => 1,
             'wallets.properties.unitConfigurable' => false,
             'wallets.properties.decimalPlaces' => 0,
@@ -46,6 +48,7 @@ class WalletStoreRequest extends Request
             'wallets.code'          => Str::random(8),
             'wallets.title'         => Arr::get($row, 'title'),
             'wallets.unit'          => Arr::get($row, 'unit'),
+            'wallets.mode'          => Arr::get($row, 'mode'),
             'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
             'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),
             'wallets.status'        => 1,

@@ -4,7 +4,6 @@ namespace App\Http\Requesters\Apis\Wallets;
 
 use App\Concerns\Databases\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 class WalletUpdateRequest extends Request
 {
@@ -20,6 +19,7 @@ class WalletUpdateRequest extends Request
             'wallets.id'      => null,
             'wallets.user_id' => null,
             'wallets.title'   => null,
+            'wallets.mode'    => null,
             'wallets.properties.unitConfigurable' => false,
             'wallets.properties.decimalPlaces' => 0,
             'wallets.unit'    => 'TWD',
@@ -41,6 +41,7 @@ class WalletUpdateRequest extends Request
             'wallets.id'      => Arr::get($row, 'wallet'),
             'wallets.user_id' => Arr::get($row, 'user.id'),
             'wallets.title'   => Arr::get($row, 'title'),
+            'wallets.mode'    => Arr::get($row, 'mode'),
             'wallets.unit'    => Arr::get($row, 'unit'),
             'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
             'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),

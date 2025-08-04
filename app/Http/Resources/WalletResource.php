@@ -48,6 +48,7 @@ class WalletResource extends JsonResource
                     'code'       => Arr::get($wallet, 'code'),
                     'status'     => Arr::get($wallet, 'status'),
                     'unit'       => Arr::get($wallet, 'unit'),
+                    'mode'       => Arr::get($wallet, 'mode'),
                     'properties' => Arr::get($wallet, 'properties'),
                     'user'       => [
                         'id'   => Arr::get($wallet, 'users.id'),
@@ -72,6 +73,7 @@ class WalletResource extends JsonResource
                 'id'         => Arr::get($this->resource, 'id'),
                 'code'       => Arr::get($this->resource, 'code'),
                 'title'      => Arr::get($this->resource, 'title'),
+                'mode'       => Arr::get($this->resource, 'mode'),
                 'status'     => Arr::get($this->resource, 'status'),
                 'created_at' => Arr::get($this->resource, 'created_at', Carbon::now())->toDateTimeString(),
             ],

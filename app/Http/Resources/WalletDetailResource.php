@@ -42,6 +42,7 @@ class WalletDetailResource extends JsonResource
                 'code' => Arr::get($wallet, 'code'),
                 'title' => Arr::get($wallet, 'title'),
                 'status' => Arr::get($wallet, 'status'),
+                'mode' => Arr::get($wallet, 'mode'),
                 'unit' => Arr::get($wallet, 'unit'),
                 'wallet_user' => $walletCreatedUser,
                 'properties' => Arr::get($wallet, 'properties'),
