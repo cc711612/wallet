@@ -98,9 +98,22 @@ class WalletController extends ApiController
         $validate = (new WalletUpdateValidator($requester))->validate();
         if ($this->validationFails($validate)) return $this->validationErrorResponse($validate);
         try {
+            // 獲取原始請求數據，只更新有提供的欄位
+            $originalData = $request->all();
+            $walletData = Arr::get($requester, 'wallets');
+            
+            // 過濾掉未在原始請求中提供的欄位
+            $filteredData = array_filter($walletData, function($value, $key) use ($originalData) {
+                // 特殊處理 mode 欄位，如果原始請求中沒有提供，則不更新
+                if ($key === 'mode' && !isset($originalData['mode'])) {
+                    return false;
+                }
+                return true;
+            }, ARRAY_FILTER_USE_BOTH);
+            
             $this->walletApiService->update(
                 Arr::get($requester, 'wallets.id'),
-                Arr::get($requester, 'wallets')
+                $filteredData
             );
             return $this->response()->success();
         } catch (\Throwable $e) {
