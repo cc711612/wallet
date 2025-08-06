@@ -2,13 +2,13 @@
 
 namespace App\Observers;
 
-use App\Jobs\LineNotifyJob;
 use App\Jobs\NotificationFCM;
 use App\Models\Wallets\Databases\Entities\WalletDetailEntity;
 use App\Models\Wallets\Databases\Entities\WalletEntity;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
 use App\Models\Wallets\Databases\Services\WalletApiService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class WalletDetailObserver
@@ -44,10 +44,14 @@ class WalletDetailObserver
         $walletId = $walletDetailEntity->wallet_id;
         $wallet = WalletEntity::find($walletId);
 
-        $this->walletApiService->update(
-            $walletDetailEntity->wallet_id,
-            ['updated_at' => Carbon::now()->toDateTimeString()]
-        );
+        // 將更新 wallet updated_at 的操作延後到 transaction 完成後執行，避免死鎖
+        DB::afterCommit(function () use ($walletDetailEntity) {
+            $this->walletApiService->update(
+                $walletDetailEntity->wallet_id,
+                ['updated_at' => Carbon::now()->toDateTimeString()]
+            );
+        });
+
         // 非個人記帳
         if (!$walletDetailEntity->is_personal) {
             $walletUsers = WalletUserEntity::where('wallet_id', $walletId)
@@ -88,11 +92,14 @@ class WalletDetailObserver
      */
     public function updated(WalletDetailEntity $walletDetailEntity)
     {
-        //
-        $this->walletApiService->update(
-            $walletDetailEntity->wallet_id,
-            ['updated_at' => Carbon::now()->toDateTimeString()]
-        );
+        // 將更新 wallet updated_at 的操作延後到 transaction 完成後執行，避免死鎖
+        DB::afterCommit(function () use ($walletDetailEntity) {
+            $this->walletApiService->update(
+                $walletDetailEntity->wallet_id,
+                ['updated_at' => Carbon::now()->toDateTimeString()]
+            );
+        });
+        
         return $this->walletApiService->forgetDetailCache($walletDetailEntity->wallet_id);
     }
 
