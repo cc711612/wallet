@@ -12,6 +12,7 @@ unit-test-job:   # This job runs in the test stage .
   script:
     - cd /var/www/wallet
     - php artisan config:clear
+    - php artisan config:clear
     #- rm -rf .env
     #- ln -s .env.testing .env
     - php artisan test
