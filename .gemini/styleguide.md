@@ -1,0 +1,1 @@
+- 務必使用繁體中文（台灣）來進行所有的 Code Review、Pull Request Summary、Comment、Summary of Changes
