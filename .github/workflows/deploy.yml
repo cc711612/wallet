@@ -52,7 +52,35 @@ jobs:
           port: ${{ env.DEPLOY_PORT }}
           key: ${{ env.DEPLOY_SSHKEY }}
           script: |
-            echo "Debugging connection to remote server."
-            whoami
-            pwd
-            cd ${{ env.DEPLOY_PATH }} && ${{ env.DEPLOY_SH }}
+            set -e
+            echo "=== 開始部署到 ${{ env.ENVIRONMENT }} 環境 ==="
+            echo "當前使用者: $(whoami)"
+            echo "當前目錄: $(pwd)"
+            echo "部署路徑: ${{ env.DEPLOY_PATH }}"
+            echo "部署腳本: ${{ env.DEPLOY_SH }}"
+            
+            # 檢查部署路徑是否存在
+            if [ ! -d "${{ env.DEPLOY_PATH }}" ]; then
+              echo "錯誤: 部署路徑不存在: ${{ env.DEPLOY_PATH }}"
+              exit 1
+            fi
+            
+            # 進入部署目錄
+            cd ${{ env.DEPLOY_PATH }}
+            echo "已進入部署目錄: $(pwd)"
+            
+            # 檢查部署腳本是否存在
+            if [ ! -f "${{ env.DEPLOY_SH }}" ]; then
+              echo "錯誤: 部署腳本不存在: ${{ env.DEPLOY_SH }}"
+              exit 1
+            fi
+            
+            # 設定執行權限
+            echo "設定腳本執行權限..."
+            chmod +x "${{ env.DEPLOY_SH }}"
+            
+            # 執行部署腳本
+            echo "執行部署腳本..."
+            bash "${{ env.DEPLOY_SH }}"
+            
+            echo "=== 部署完成 ==="
