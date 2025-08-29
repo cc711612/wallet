@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\CreateWalletDetailJob;
 use Illuminate\Console\Command;
 use App\Models\Users\Databases\Services\UserApiService;
 use App\Models\Wallets\Databases\Entities\WalletUserEntity;
@@ -82,6 +83,11 @@ class AutoCreateWalletCommand extends Command
                 'user_id' => 1,
                 'name' => 'Roy',
                 'token' => Str::random(12)
+            ]);
+            CreateWalletDetailJob::dispatch($userId, $walletId, [
+                'amount' => 943,
+                'title' => '多多健保',
+                'categoryId' => 13,
             ]);
         }
     }
