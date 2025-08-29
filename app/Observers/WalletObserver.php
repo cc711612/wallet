@@ -18,7 +18,7 @@ class WalletObserver
     /**
      * @var \App\Models\Wallets\Databases\Services\WalletApiService
      */
-    private $wallet_api_service;
+    private $walletApiService;
 
     /**
      * @param  \App\Models\Wallets\Databases\Services\WalletApiService  $walletApiService
