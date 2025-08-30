@@ -17,7 +17,7 @@ WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 # 自動偵測專案根目錄
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEPLOYMENT_ROOT="$SCRIPT_DIR"
 PROJECT_ROOT="$(dirname "$DEPLOYMENT_ROOT")"
 
@@ -78,7 +78,7 @@ check_docker_status() {
     
     # 檢查容器狀態
     echo -e "${YELLOW}📦 容器狀態：${NC}"
-    docker-compose ps
+    $DOCKER_COMPOSE_CMD ps
     
     echo -e "\n${YELLOW}💾 映像大小：${NC}"
     docker images | grep -E "(wallet|php|nginx|mysql)" | head -10
@@ -98,7 +98,7 @@ check_service_health() {
     
     # 檢查 PHP 服務
     echo -e "${YELLOW}🐘 PHP 服務檢查：${NC}"
-    if docker-compose exec -T php php -v 2>/dev/null; then
+    if $DOCKER_COMPOSE_CMD exec -T php php -v 2>/dev/null; then
         print_success "PHP 服務正常"
     else
         print_error "PHP 服務異常"
@@ -106,7 +106,7 @@ check_service_health() {
     
     # 檢查 Laravel 應用
     echo -e "\n${YELLOW}🌐 Laravel 應用檢查：${NC}"
-    if docker-compose exec -T php php artisan --version 2>/dev/null; then
+    if $DOCKER_COMPOSE_CMD exec -T php php artisan --version 2>/dev/null; then
         print_success "Laravel 應用正常"
     else
         print_error "Laravel 應用異常"
@@ -114,7 +114,7 @@ check_service_health() {
     
     # 檢查資料庫連線
     echo -e "\n${YELLOW}🗄️  資料庫連線檢查：${NC}"
-    if docker-compose exec -T php php artisan migrate:status 2>/dev/null | head -5; then
+    if $DOCKER_COMPOSE_CMD exec -T php php artisan migrate:status 2>/dev/null | head -5; then
         print_success "資料庫連線正常"
     else
         print_warning "資料庫連線需要檢查"
@@ -122,7 +122,7 @@ check_service_health() {
     
     # 檢查 Octane 狀態
     echo -e "\n${YELLOW}⚡ Octane 服務檢查：${NC}"
-    if docker-compose exec -T php php artisan octane:status 2>/dev/null; then
+    if $DOCKER_COMPOSE_CMD exec -T php php artisan octane:status 2>/dev/null; then
         print_success "Octane 服務正常"
     else
         print_warning "Octane 服務未啟動或需要檢查"
@@ -156,20 +156,22 @@ deploy_environment() {
     
     # 停止現有容器
     print_info "停止現有容器..."
-    docker-compose down
+    $DOCKER_COMPOSE_CMD down
     
     # 清理舊映像 (可選)
     read -p "是否要清理舊的 Docker 映像？(y/N): " cleanup_images
-    if [[ $cleanup_images =~ ^[Yy]$ ]]; then
-        print_info "清理舊映像..."
-        docker system prune -f
-    fi
+    case "$cleanup_images" in
+        [Yy]|[Yy][Ee][Ss])
+            print_info "清理舊映像..."
+            docker system prune -f
+            ;;
+    esac
     
     # 開始建置
     print_info "開始建置 Docker 映像..."
     local start_time=$(date +%s)
     
-    if RUN_MODE=octane docker-compose up -d --build; then
+    if RUN_MODE=octane $DOCKER_COMPOSE_CMD up -d --build; then
         local end_time=$(date +%s)
         local duration=$((end_time - start_time))
         print_success "部署成功！建置時間：${duration}秒"
@@ -184,7 +186,7 @@ deploy_environment() {
     
     # 執行 Composer 安裝
     print_info "安裝 Composer 依賴..."
-    if docker-compose exec -T php composer install --no-dev --optimize-autoloader; then
+    if $DOCKER_COMPOSE_CMD exec -T php composer install --no-dev --optimize-autoloader; then
         print_success "Composer 依賴安裝完成"
     else
         print_warning "Composer 依賴安裝可能有問題"
@@ -204,9 +206,9 @@ deploy_environment() {
     echo "   - 資料庫: localhost:3306"
     echo ""
     echo -e "${YELLOW}💡 常用指令：${NC}"
-    echo "   - 查看日誌: docker-compose logs -f"
-    echo "   - 進入容器: docker-compose exec php bash"
-    echo "   - 重啟服務: docker-compose restart"
+    echo "   - 查看日誌: $DOCKER_COMPOSE_CMD logs -f"
+    echo "   - 進入容器: $DOCKER_COMPOSE_CMD exec php bash"
+    echo "   - 重啟服務: $DOCKER_COMPOSE_CMD restart"
 }
 
 # 查看當前狀態
@@ -220,10 +222,10 @@ show_current_status() {
             cd "$env_dir"
             
             # 檢查是否有運行的容器
-            local running_containers=$(docker-compose ps -q)
+            local running_containers=$($DOCKER_COMPOSE_CMD ps -q)
             if [ -n "$running_containers" ]; then
                 print_success "$env 環境有運行中的容器"
-                docker-compose ps
+                $DOCKER_COMPOSE_CMD ps
             else
                 print_warning "$env 環境沒有運行中的容器"
             fi
@@ -236,25 +238,28 @@ cleanup_all() {
     print_warning "即將清理所有 Docker 容器和映像"
     read -p "確認要繼續嗎？這將停止所有容器並清理系統 (y/N): " confirm
     
-    if [[ $confirm =~ ^[Yy]$ ]]; then
-        print_info "停止所有容器..."
-        
-        # 停止各環境的容器
-        for env in develop production; do
-            local env_dir="$DEPLOYMENT_ROOT/$env"
-            if [ -d "$env_dir" ]; then
-                cd "$env_dir"
-                docker-compose down
-            fi
-        done
-        
-        # 清理系統
-        print_info "清理 Docker 系統..."
-        docker system prune -af
-        print_success "清理完成"
-    else
-        print_info "取消清理操作"
-    fi
+    case "$confirm" in
+        [Yy]|[Yy][Ee][Ss])
+            print_info "停止所有容器..."
+            
+            # 停止各環境的容器
+            for env in develop production; do
+                local env_dir="$DEPLOYMENT_ROOT/$env"
+                if [ -d "$env_dir" ]; then
+                    cd "$env_dir"
+                    $DOCKER_COMPOSE_CMD down
+                fi
+            done
+            
+            # 清理系統
+            print_info "清理 Docker 系統..."
+            docker system prune -af
+            print_success "清理完成"
+            ;;
+        *)
+            print_info "取消清理操作"
+            ;;
+    esac
 }
 
 # 主選單循環
@@ -296,19 +301,39 @@ main_menu() {
 
 # 檢查必要工具
 check_requirements() {
-    local missing_tools=()
+    local missing_tools=""
     
-    for tool in docker docker-compose; do
-        if ! command -v $tool &> /dev/null; then
-            missing_tools+=($tool)
+    # 檢查 Docker
+    if ! command -v docker >/dev/null 2>&1; then
+        missing_tools="docker"
+    fi
+    
+    # 檢查 Docker Compose (支援新舊版本)
+    local has_compose=false
+    if command -v docker-compose >/dev/null 2>&1; then
+        has_compose=true
+        DOCKER_COMPOSE_CMD="docker-compose"
+    elif docker compose version >/dev/null 2>&1; then
+        has_compose=true
+        DOCKER_COMPOSE_CMD="docker compose"
+    fi
+    
+    if [ "$has_compose" = false ]; then
+        if [ -z "$missing_tools" ]; then
+            missing_tools="docker-compose"
+        else
+            missing_tools="$missing_tools docker-compose"
         fi
-    done
+    fi
     
-    if [ ${#missing_tools[@]} -ne 0 ]; then
-        print_error "缺少必要工具: ${missing_tools[*]}"
+    if [ -n "$missing_tools" ]; then
+        print_error "缺少必要工具: $missing_tools"
         echo "請先安裝 Docker 和 Docker Compose"
+        echo "提示: 新版 Docker 可能使用 'docker compose' 而非 'docker-compose'"
         exit 1
     fi
+    
+    print_info "使用 Docker Compose 指令: $DOCKER_COMPOSE_CMD"
 }
 
 # 主程式入口
