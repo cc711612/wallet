@@ -37,10 +37,11 @@ vendor/
 # 開發相關檔案
 .env
 .env.*
+# Docker 相關檔案（但保留需要的配置檔案）
 docker-compose.yml
 docker-compose.override.yml
 Dockerfile*
-deployment/
+# deployment/ # 註解掉，因為需要使用 deployment/develop/ 下的檔案
 
 # 文檔檔案
 README.md

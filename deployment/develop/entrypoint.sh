@@ -78,15 +78,21 @@ if [ "$RUN_MODE" = "octane" ]; then
     # 啟動 Octane (前台運行)
     php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=4
 elif [ "$RUN_MODE" = "both" ]; then
-    echo "同時啟動 PHP-FPM 和 Octane..."
-    # 啟動 PHP-FPM (背景)
-    docker-php-entrypoint php-fpm &
-    # 等待 PHP-FPM 啟動
+    echo "同時啟動 Supervisord 和 Octane..."
+    # 啟動 supervisord (背景)
+    supervisord -c /etc/supervisor/conf.d/supervisord.conf &
+    # 等待 supervisord 啟動
     sleep 5
     # 啟動 Octane (前台運行)
     php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=4
+elif [ "$RUN_MODE" = "fpm" ]; then
+    echo "啟動 Supervisord 服務..."
+    # 使用 supervisord 管理背景服務
+    exec tini -- supervisord -c /etc/supervisor/conf.d/supervisord.conf
 else
-    echo "啟動 PHP-FPM..."
-    # 預設啟動 PHP-FPM
-    docker-php-entrypoint php-fpm
+    echo "啟動 Laravel Octane with Swoole (預設)..."
+    # 等待其他服務啟動
+    sleep 5
+    # 啟動 Octane (前台運行)
+    php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=4
 fi

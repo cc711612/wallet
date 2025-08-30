@@ -167,11 +167,35 @@ deploy_environment() {
             ;;
     esac
     
+    # 選擇運行模式
+    echo ""
+    echo -e "${YELLOW}選擇 PHP 運行模式：${NC}"
+    echo "1) 🚀 Octane (Swoole) - 高性能異步服務"
+    echo "2) 🐘 PHP-FPM - 傳統 FastCGI 處理"
+    echo "3) 🔄 Both - 同時運行兩種模式"
+    echo ""
+    read -p "請選擇運行模式 (1-3, 預設為 1): " run_mode_choice
+    
+    case "$run_mode_choice" in
+        2)
+            RUN_MODE="fpm"
+            print_info "選擇運行模式: PHP-FPM"
+            ;;
+        3)
+            RUN_MODE="both"
+            print_info "選擇運行模式: Octane + PHP-FPM"
+            ;;
+        *)
+            RUN_MODE="octane"
+            print_info "選擇運行模式: Octane (Swoole)"
+            ;;
+    esac
+
     # 開始建置
     print_info "開始建置 Docker 映像..."
     local start_time=$(date +%s)
     
-    if RUN_MODE=octane $DOCKER_COMPOSE_CMD up -d --build; then
+    if RUN_MODE=$RUN_MODE $DOCKER_COMPOSE_CMD up -d --build; then
         local end_time=$(date +%s)
         local duration=$((end_time - start_time))
         print_success "部署成功！建置時間：${duration}秒"
