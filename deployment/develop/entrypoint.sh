@@ -55,7 +55,7 @@ fi &
 
 # 安裝 composer 依賴
 echo "安裝 composer 依賴..."
-composer install &
+composer install --ignore-platform-req=ext-zip &
 
 # 設定 crontab 權限
 if [ -d "/etc/crontabs" ]; then
