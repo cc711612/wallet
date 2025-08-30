@@ -1,0 +1,55 @@
+# 支援 Laravel 9 + Octane Swoole 的 PHP 8.2 FPM Alpine Dockerfile (預編譯極速版)
+# 使用預編譯 Swoole 映像避免長時間編譯
+FROM phpswoole/swoole:php8.2-alpine
+
+# 設定工作目錄
+WORKDIR /var/www/html
+
+# 安裝系統依賴和 PHP 擴展 (避免重新編譯 Swoole)
+RUN apk add --no-cache --virtual .build-deps \
+        autoconf gcc g++ make pkgconfig \
+        libpng-dev libxml2-dev oniguruma-dev libzip-dev icu-dev && \
+    apk add --no-cache \
+        tini bash curl supervisor mysql-client \
+        icu-libs libpng libxml2 oniguruma libzip && \
+    \
+    # 安裝 PHP 擴展 (跳過 Swoole，已預裝)
+    docker-php-ext-configure gd && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install -j$(nproc) \
+        gd intl pdo pdo_mysql mbstring xml zip opcache bcmath && \
+    \
+    # 安裝 Redis 擴展
+    pecl install redis && \
+    docker-php-ext-enable redis && \
+    \
+    # 清理編譯依賴
+    apk del .build-deps && \
+    rm -rf /var/cache/apk/* /tmp/pear
+
+# 複製 PHP 配置
+COPY php_config/php.ini /usr/local/etc/php/php.ini
+COPY php_config/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# 複製 Supervisor 配置
+COPY supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 複製入口腳本
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# 複製應用程式碼
+COPY . .
+
+# 設定權限
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# 暴露端口
+EXPOSE 9000 8000
+
+# 使用 tini 作為 init 系統
+ENTRYPOINT ["tini", "--"]
+
+# 啟動腳本
+CMD ["/usr/local/bin/entrypoint.sh"]
