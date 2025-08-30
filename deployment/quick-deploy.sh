@@ -4,6 +4,25 @@
 # 快速進入 deployment 目錄並選擇環境
 
 # 自動偵測路徑
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# 檢查 Docker Compose 版本
+if command -v docker-compose >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    echo "❌ 找不到 Docker Compose，請先安裝"
+    exit 1
+fi
+
+# 顏色定義h
+
+# 快速部署腳本 - 簡化版
+# 快速進入 deployment 目錄並選擇環境
+
+# 自動偵測路徑
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
@@ -25,22 +44,24 @@ case $choice in
         echo -e "${GREEN}切換到開發環境...${NC}"
         cd "$SCRIPT_DIR/develop"
         echo -e "${YELLOW}當前位置: $(pwd)${NC}"
+        echo -e "${YELLOW}Docker Compose 指令: $DOCKER_COMPOSE_CMD${NC}"
         echo -e "${YELLOW}可用指令:${NC}"
-        echo "  - RUN_MODE=octane docker-compose up -d --build  # 重新建置並啟動"
-        echo "  - docker-compose up -d                         # 啟動服務"
-        echo "  - docker-compose logs -f                       # 查看日誌"
-        echo "  - docker-compose exec php bash                 # 進入容器"
+        echo "  - RUN_MODE=octane $DOCKER_COMPOSE_CMD up -d --build  # 重新建置並啟動"
+        echo "  - $DOCKER_COMPOSE_CMD up -d                         # 啟動服務"
+        echo "  - $DOCKER_COMPOSE_CMD logs -f                       # 查看日誌"
+        echo "  - $DOCKER_COMPOSE_CMD exec php bash                 # 進入容器"
         exec bash
         ;;
     2)
         echo -e "${GREEN}切換到生產環境...${NC}"
         cd "$SCRIPT_DIR/production"
         echo -e "${YELLOW}當前位置: $(pwd)${NC}"
+        echo -e "${YELLOW}Docker Compose 指令: $DOCKER_COMPOSE_CMD${NC}"
         echo -e "${YELLOW}可用指令:${NC}"
-        echo "  - RUN_MODE=octane docker-compose up -d --build  # 重新建置並啟動"
-        echo "  - docker-compose up -d                         # 啟動服務"
-        echo "  - docker-compose logs -f                       # 查看日誌"
-        echo "  - docker-compose exec php bash                 # 進入容器"
+        echo "  - RUN_MODE=octane $DOCKER_COMPOSE_CMD up -d --build  # 重新建置並啟動"
+        echo "  - $DOCKER_COMPOSE_CMD up -d                         # 啟動服務"
+        echo "  - $DOCKER_COMPOSE_CMD logs -f                       # 查看日誌"
+        echo "  - $DOCKER_COMPOSE_CMD exec php bash                 # 進入容器"
         exec bash
         ;;
     3)
