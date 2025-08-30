@@ -3,6 +3,10 @@ set -e
 
 echo "=== 啟動 entrypoint.sh ==="
 
+# 讀取運行模式 (預設為 fpm)
+RUN_MODE=${RUN_MODE:-fpm}
+echo "運行模式: $RUN_MODE"
+
 # 設定環境變數檔案
 echo "設定環境變數..."
 printenv | sed 's/^\(.*\)$/export "\1"/g' > "/.schedule-env.sh" && chmod +x "/.schedule-env.sh" &
@@ -51,7 +55,7 @@ fi &
 
 # 安裝 composer 依賴
 echo "安裝 composer 依賴..."
-composer install --no-dev &
+composer install &
 
 # 設定 crontab 權限
 if [ -d "/etc/crontabs" ]; then
@@ -66,5 +70,23 @@ supervisord &
 echo "啟動 crond..."
 crond &
 
-echo "啟動 php-fpm..."
-docker-php-entrypoint php-fpm
+# 根據運行模式選擇啟動方式
+if [ "$RUN_MODE" = "octane" ]; then
+    echo "啟動 Laravel Octane with Swoole..."
+    # 等待其他服務啟動
+    sleep 5
+    # 啟動 Octane (前台運行)
+    php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=4
+elif [ "$RUN_MODE" = "both" ]; then
+    echo "同時啟動 PHP-FPM 和 Octane..."
+    # 啟動 PHP-FPM (背景)
+    docker-php-entrypoint php-fpm &
+    # 等待 PHP-FPM 啟動
+    sleep 5
+    # 啟動 Octane (前台運行)
+    php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=4
+else
+    echo "啟動 PHP-FPM..."
+    # 預設啟動 PHP-FPM
+    docker-php-entrypoint php-fpm
+fi
