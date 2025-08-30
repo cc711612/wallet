@@ -55,7 +55,11 @@ fi &
 
 # 安裝 composer 依賴
 echo "安裝 composer 依賴..."
-composer install --no-dev --optimize-autoloader &
+composer install --no-dev --optimize-autoloader
+
+# 重新生成優化的 autoload 文件
+echo "生成優化的 autoload 文件..."
+composer dump-autoload --optimize &
 
 # 設定 crontab 權限
 if [ -d "/etc/crontabs" ]; then
