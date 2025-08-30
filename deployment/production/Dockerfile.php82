@@ -1,0 +1,47 @@
+# 支援 Laravel 9 + Octane Swoole 的 PHP 8.2 FPM Alpine Dockerfile (極速版)
+# 使用預編譯的 PHP 映像減少編譯時間
+FROM php:8.2-fpm-alpine
+
+# 設定工作目錄
+WORKDIR /var/www/html
+
+# 一次性安裝所有必需套件並編譯擴展 (單一 RUN 指令)
+RUN apk add --no-cache tini bash curl supervisor mysql-client \
+    # 運行時依賴
+    icu-libs libpng libxml2 oniguruma libzip freetype libjpeg-turbo libwebp \
+    # 臨時編譯依賴
+    && apk add --no-cache --virtual .build-deps \
+    libpng-dev libxml2-dev oniguruma-dev libzip-dev freetype-dev \
+    libjpeg-turbo-dev libwebp-dev icu-dev linux-headers $PHPIZE_DEPS \
+    # 快速編譯 PHP 擴展 (並行編譯)
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql mbstring xml zip bcmath gd intl pcntl sockets \
+    # 快速安裝 PECL 擴展 
+    && pecl install redis swoole \
+    && docker-php-ext-enable redis swoole \
+    # 立即清理 (釋放空間和減少 layer 大小)
+    && apk del .build-deps \
+    && rm -rf /var/cache/apk/* /tmp/* /var/tmp/* /usr/src/php* \
+    # 建立目錄和設定權限
+    && mkdir -p /var/log/supervisor /run/supervisord \
+    && if ! getent group www-data >/dev/null; then addgroup -g 1000 -S www-data; fi \
+    && if ! getent passwd www-data >/dev/null; then adduser -u 1000 -S www-data -G www-data; fi
+
+# 安裝 Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# 複製配置檔案
+COPY php_config/php.ini /usr/local/etc/php/conf.d/
+COPY php_config/www.conf /usr/local/etc/php-fpm.d/
+COPY supervisor/supervisord.conf /etc/supervisord.conf
+COPY supervisor/supervisor.d/ /etc/supervisor.d/
+COPY entrypoint.sh /entrypoint.sh
+
+# 設定執行權限
+RUN chmod +x /entrypoint.sh
+
+# 暴露端口
+EXPOSE 9000 8000
+
+# 使用 tini 作為 init 系統
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]

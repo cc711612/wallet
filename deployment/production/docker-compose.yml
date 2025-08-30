@@ -2,21 +2,26 @@ version: '3' # 目前使用的版本
 services:
     # services 關鍵字後面列出 web, redis 兩項專案中的服務
     php:
-        image: cc711612/php8.1-fpm-alpine:1.3
+        # image: cc711612/php8.1-fpm-alpine:1.3  # 舊版本
+        build:
+            context: .
+            dockerfile: Dockerfile.php82
         restart: always
         container_name: ${PROJECT_NAME}-php-fpm
         links:
             - "redis"
         environment:
             - TZ=Asia/Taipei
+            - RUN_MODE=${RUN_MODE:-fpm}  # fpm, octane, both
+        ports:
+            - "${OCTANE_PORT:-8000}:8000"  # Octane 端口
         volumes:
             - ${PROJECT_PATH}:/var/www/html
-            - ./entrypoint.sh:/entrypoint.sh
             - ./main_crontabs/schedule:/etc/crontabs/schedule # alpine crontab 使用
             - ./main_crontabs/root:/etc/crontabs/root # alpine crontab 使用
             - ./supervisor/supervisor.d:/etc/supervisor.d
             - ./supervisor/supervisord.conf:/etc/supervisord.conf
-        command: /bin/sh -c "/entrypoint.sh"
+        # command: /bin/sh -c "/entrypoint.sh"  # 註解掉，使用 Dockerfile 的 ENTRYPOINT
         dns:
             - 8.8.8.8
     nginx:

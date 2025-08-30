@@ -1,0 +1,53 @@
+# Laravel 專案 .dockerignore
+# 排除不需要的檔案以加速 context 傳輸
+
+# Git 相關
+.git
+.gitignore
+.gitattributes
+
+# IDE 檔案
+.vscode
+.idea
+*.swp
+*.swo
+
+# 暫存檔和日誌
+*.log
+*.tmp
+*.cache
+storage/logs/*
+!storage/logs/.gitkeep
+
+# 測試檔案
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Node.js 相關 (如果不需要前端建置)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer 相關 (vendor 目錄)
+vendor/
+
+# 開發相關檔案
+.env
+.env.*
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile*
+deployment/
+
+# 文檔檔案
+README.md
+*.md
+docs/
+
+# 其他暫存檔案
+.DS_Store
+Thumbs.db
+*.pid

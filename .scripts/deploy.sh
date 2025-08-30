@@ -46,6 +46,13 @@ docker exec $PHP_CONTAINER php artisan optimize
 echo "執行資料庫遷移..."
 docker exec $PHP_CONTAINER php artisan migrate --force 
 
+# 設定正確的檔案權限
+echo "設定 storage 目錄權限..."
+docker exec $PHP_CONTAINER chown -R www-data:www-data /var/www/html/storage
+docker exec $PHP_CONTAINER chmod -R 777 /var/www/html/storage/logs
+docker exec $PHP_CONTAINER chmod -R 777 /var/www/html/storage/framework/sessions
+docker exec $PHP_CONTAINER chmod -R 777 /var/www/html/storage/framework/cache
+
 # 退出維護模式
 echo "退出維護模式..."
 docker exec $PHP_CONTAINER php artisan up 
