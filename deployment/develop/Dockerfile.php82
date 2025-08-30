@@ -4,12 +4,20 @@ FROM phpswoole/swoole:php8.2-alpine
 # 設定工作目錄
 WORKDIR /var/www/html
 
-# 只安裝運行時必要套件，完全避免編譯
+# 安裝必要套件（包含編譯工具和運行時套件）
 RUN apk add --no-cache \
-        tini bash curl supervisor mariadb-connector-c && \
+        tini bash curl supervisor mariadb-connector-c \
+        # 編譯工具（編譯後會清理）
+        gcc g++ make autoconf && \
+    \
+    # 安裝 pcntl 擴展 (Octane 需要)
+    docker-php-ext-install pcntl && \
+    \
+    # 清理編譯工具（保持映像精簡）
+    apk del gcc g++ make autoconf && \
     \
     # 檢查必要擴展是否存在
-    php -m | grep -E "(swoole|pdo|mysql|mbstring|json)" && \
+    php -m | grep -E "(swoole|pdo|mysql|mbstring|json|pcntl)" && \
     echo "✅ 核心擴展檢查完成" && \
     \
     # 清理快取
@@ -18,16 +26,16 @@ RUN apk add --no-cache \
 # 檢查並啟用已有的 PHP 擴展
 RUN php -m | grep -E "(swoole|pdo|mysql|json|mbstring)" || true
 
-# 複製配置文件
-COPY deployment/develop/php_config/php.ini /usr/local/etc/php/php.ini
-COPY deployment/develop/php_config/www.conf /usr/local/etc/php-fpm.d/www.conf
-COPY deployment/develop/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# 複製啟動腳本（從當前 develop 目錄）
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# 複製應用程式代碼（包含vendor目錄）
-COPY . .
+# 複製配置文件（從當前 develop 目錄）
+COPY php_config/php.ini /usr/local/etc/php/php.ini
+COPY php_config/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 複製啟動腳本
-COPY deployment/develop/entrypoint.sh /usr/local/bin/entrypoint.sh
+# 複製應用程式代碼（從上兩層目錄）
+COPY ../../ /var/www/html/
 RUN chmod +x /usr/local/bin/entrypoint.sh && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
