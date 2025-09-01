@@ -4,7 +4,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 8.83.16.
+ * Generated for Laravel 8.83.29.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -712,7 +712,7 @@
          * @param int $code
          * @param string $message
          * @param array $headers
-         * @return \Illuminate\Foundation\never 
+         * @return never 
          * @throws \Symfony\Component\HttpKernel\Exception\HttpException
          * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
          * @static 
@@ -1173,7 +1173,7 @@
          * Resolve all of the bindings for a given tag.
          *
          * @param string $tag
-         * @return \Illuminate\Container\iterable 
+         * @return iterable 
          * @static 
          */ 
         public static function tagged($tag)
@@ -1239,7 +1239,7 @@
          * Call the given Closure / class@method and inject its dependencies.
          *
          * @param callable|string $callback
-         * @param \Illuminate\Container\array<string,  mixed>  $parameters
+         * @param array<string, mixed> $parameters
          * @param string|null $defaultMethod
          * @return mixed 
          * @throws \InvalidArgumentException
@@ -2167,6 +2167,17 @@
         {
                         /** @var \Illuminate\Auth\SessionGuard $instance */
                         return $instance->setRequest($request);
+        }
+                    /**
+         * Get the timebox instance used by the guard.
+         *
+         * @return \Illuminate\Support\Timebox 
+         * @static 
+         */ 
+        public static function getTimebox()
+        {
+                        /** @var \Illuminate\Auth\SessionGuard $instance */
+                        return $instance->getTimebox();
         }
                     /**
          * Determine if the current user is authenticated. If not, throw an exception.
@@ -3492,10 +3503,10 @@
                     /**
          * Obtains multiple cache items by their unique keys.
          *
-         * @return \Illuminate\Cache\iterable 
-         * @param \Psr\SimpleCache\iterable $keys A list of keys that can obtained in a single operation.
+         * @return iterable 
+         * @param iterable $keys A list of keys that can obtained in a single operation.
          * @param mixed $default Default value to return for keys that do not exist.
-         * @return \Psr\SimpleCache\iterable A list of key => value pairs. Cache keys that do not exist or are stale will have $default as value.
+         * @return iterable A list of key => value pairs. Cache keys that do not exist or are stale will have $default as value.
          * @throws \Psr\SimpleCache\InvalidArgumentException
          *   MUST be thrown if $keys is neither an array nor a Traversable,
          *   or if any of the $keys are not a legal value.
@@ -3569,7 +3580,7 @@
          * Persists a set of key => value pairs in the cache, with an optional TTL.
          *
          * @return bool 
-         * @param \Psr\SimpleCache\iterable $values A list of key => value pairs for a multiple-set operation.
+         * @param iterable $values A list of key => value pairs for a multiple-set operation.
          * @param null|int|\DateInterval $ttl Optional. The TTL value of this item. If no value is sent and
          *                                       the driver supports TTL then the library may set a default value
          *                                       for it or let the driver take care of that.
@@ -3708,7 +3719,7 @@
          * Deletes multiple cache items in a single operation.
          *
          * @return bool 
-         * @param \Psr\SimpleCache\iterable $keys A list of string-based keys to be deleted.
+         * @param iterable $keys A list of string-based keys to be deleted.
          * @return bool True if the items were successfully removed. False if there was an error.
          * @throws \Psr\SimpleCache\InvalidArgumentException
          *   MUST be thrown if $keys is neither an array nor a Traversable,
@@ -3923,6 +3934,50 @@
                         return $instance->macroCall($method, $parameters);
         }
                     /**
+         * Remove all items from the cache.
+         *
+         * @return bool 
+         * @static 
+         */ 
+        public static function flush()
+        {
+                        /** @var \Illuminate\Cache\FileStore $instance */
+                        return $instance->flush();
+        }
+                    /**
+         * Get the Filesystem instance.
+         *
+         * @return \Illuminate\Filesystem\Filesystem 
+         * @static 
+         */ 
+        public static function getFilesystem()
+        {
+                        /** @var \Illuminate\Cache\FileStore $instance */
+                        return $instance->getFilesystem();
+        }
+                    /**
+         * Get the working directory of the cache.
+         *
+         * @return string 
+         * @static 
+         */ 
+        public static function getDirectory()
+        {
+                        /** @var \Illuminate\Cache\FileStore $instance */
+                        return $instance->getDirectory();
+        }
+                    /**
+         * Get the cache key prefix.
+         *
+         * @return string 
+         * @static 
+         */ 
+        public static function getPrefix()
+        {
+                        /** @var \Illuminate\Cache\FileStore $instance */
+                        return $instance->getPrefix();
+        }
+                    /**
          * Get a lock instance.
          *
          * @param string $name
@@ -3933,7 +3988,7 @@
          */ 
         public static function lock($name, $seconds = 0, $owner = null)
         {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
+                        /** @var \Illuminate\Cache\FileStore $instance */
                         return $instance->lock($name, $seconds, $owner);
         }
                     /**
@@ -3946,99 +4001,8 @@
          */ 
         public static function restoreLock($name, $owner)
         {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
+                        /** @var \Illuminate\Cache\FileStore $instance */
                         return $instance->restoreLock($name, $owner);
-        }
-                    /**
-         * Remove all items from the cache.
-         *
-         * @return bool 
-         * @static 
-         */ 
-        public static function flush()
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->flush();
-        }
-                    /**
-         * Get the Redis connection instance.
-         *
-         * @return \Illuminate\Redis\Connections\Connection 
-         * @static 
-         */ 
-        public static function connection()
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->connection();
-        }
-                    /**
-         * Get the Redis connection instance that should be used to manage locks.
-         *
-         * @return \Illuminate\Redis\Connections\Connection 
-         * @static 
-         */ 
-        public static function lockConnection()
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->lockConnection();
-        }
-                    /**
-         * Specify the name of the connection that should be used to store data.
-         *
-         * @param string $connection
-         * @return void 
-         * @static 
-         */ 
-        public static function setConnection($connection)
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        $instance->setConnection($connection);
-        }
-                    /**
-         * Specify the name of the connection that should be used to manage locks.
-         *
-         * @param string $connection
-         * @return \Illuminate\Cache\RedisStore 
-         * @static 
-         */ 
-        public static function setLockConnection($connection)
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->setLockConnection($connection);
-        }
-                    /**
-         * Get the Redis database instance.
-         *
-         * @return \Illuminate\Contracts\Redis\Factory 
-         * @static 
-         */ 
-        public static function getRedis()
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->getRedis();
-        }
-                    /**
-         * Get the cache key prefix.
-         *
-         * @return string 
-         * @static 
-         */ 
-        public static function getPrefix()
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        return $instance->getPrefix();
-        }
-                    /**
-         * Set the cache key prefix.
-         *
-         * @param string $prefix
-         * @return void 
-         * @static 
-         */ 
-        public static function setPrefix($prefix)
-        {
-                        /** @var \Illuminate\Cache\RedisStore $instance */
-                        $instance->setPrefix($prefix);
         }
          
     }
@@ -6758,7 +6722,7 @@
                     /**
          * Determine if all of the given abilities should be granted for the current user.
          *
-         * @param \Illuminate\Auth\Access\iterable|string $abilities
+         * @param iterable|string $abilities
          * @param array|mixed $arguments
          * @return bool 
          * @static 
@@ -6771,7 +6735,7 @@
                     /**
          * Determine if any one of the given abilities should be granted for the current user.
          *
-         * @param \Illuminate\Auth\Access\iterable|string $abilities
+         * @param iterable|string $abilities
          * @param array|mixed $arguments
          * @return bool 
          * @static 
@@ -6784,7 +6748,7 @@
                     /**
          * Determine if all of the given abilities should be denied for the current user.
          *
-         * @param \Illuminate\Auth\Access\iterable|string $abilities
+         * @param iterable|string $abilities
          * @param array|mixed $arguments
          * @return bool 
          * @static 
@@ -9123,6 +9087,64 @@
                         /** @var \Illuminate\Support\Testing\Fakes\QueueFake $instance */
                         return $instance->setConnectionName($name);
         }
+                    /**
+         * Get the backoff for an object-based queue handler.
+         *
+         * @param mixed $job
+         * @return mixed 
+         * @static 
+         */ 
+        public static function getJobBackoff($job)
+        {            //Method inherited from \Illuminate\Queue\Queue         
+                        /** @var \Illuminate\Queue\SyncQueue $instance */
+                        return $instance->getJobBackoff($job);
+        }
+                    /**
+         * Get the expiration timestamp for an object-based queue handler.
+         *
+         * @param mixed $job
+         * @return mixed 
+         * @static 
+         */ 
+        public static function getJobExpiration($job)
+        {            //Method inherited from \Illuminate\Queue\Queue         
+                        /** @var \Illuminate\Queue\SyncQueue $instance */
+                        return $instance->getJobExpiration($job);
+        }
+                    /**
+         * Register a callback to be executed when creating job payloads.
+         *
+         * @param callable|null $callback
+         * @return void 
+         * @static 
+         */ 
+        public static function createPayloadUsing($callback)
+        {            //Method inherited from \Illuminate\Queue\Queue         
+                        \Illuminate\Queue\SyncQueue::createPayloadUsing($callback);
+        }
+                    /**
+         * Get the container instance being used by the connection.
+         *
+         * @return \Illuminate\Container\Container 
+         * @static 
+         */ 
+        public static function getContainer()
+        {            //Method inherited from \Illuminate\Queue\Queue         
+                        /** @var \Illuminate\Queue\SyncQueue $instance */
+                        return $instance->getContainer();
+        }
+                    /**
+         * Set the IoC container instance.
+         *
+         * @param \Illuminate\Container\Container $container
+         * @return void 
+         * @static 
+         */ 
+        public static function setContainer($container)
+        {            //Method inherited from \Illuminate\Queue\Queue         
+                        /** @var \Illuminate\Queue\SyncQueue $instance */
+                        $instance->setContainer($container);
+        }
          
     }
             /**
@@ -9894,12 +9916,12 @@
          * Clones a request and overrides some of its parameters.
          *
          * @return static 
-         * @param array $query The GET parameters
-         * @param array $request The POST parameters
-         * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
-         * @param array $cookies The COOKIE parameters
-         * @param array $files The FILES parameters
-         * @param array $server The SERVER parameters
+         * @param array|null $query The GET parameters
+         * @param array|null $request The POST parameters
+         * @param array|null $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
+         * @param array|null $cookies The COOKIE parameters
+         * @param array|null $files The FILES parameters
+         * @param array|null $server The SERVER parameters
          * @return static 
          * @static 
          */ 
@@ -10141,6 +10163,7 @@
          * @param array $server The server parameters ($_SERVER)
          * @param string|resource|null $content The raw body data
          * @return static 
+         * @throws BadRequestException When the URI is invalid
          * @static 
          */ 
         public static function create($uri, $method = 'GET', $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
@@ -10310,7 +10333,7 @@
          * 
          *
          * @internal 
-         * @param \Symfony\Component\HttpFoundation\callable():  SessionInterface $factory
+         * @param callable():  SessionInterface $factory
          * @static 
          */ 
         public static function setSessionFactory($factory)
@@ -16052,7 +16075,247 @@
      
 }
 
-        namespace Facade\Ignition\Facades { 
+        namespace App\Facades { 
+            /**
+     * 
+     *
+     * @see \App\Services\GeminiService
+     */ 
+        class Gemini {
+                    /**
+         * Generate text content using the Gemini API
+         *
+         * @param string $prompt The text prompt for generation
+         * @param array $options Additional options to override defaults
+         * @return array|null The response from the API
+         * @throws Exception
+         * @static 
+         */ 
+        public static function generateContent($prompt, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->generateContent($prompt, $options);
+        }
+                    /**
+         * Generate text content in a streaming fashion
+         *
+         * @param string $prompt The text prompt for generation
+         * @param array $options Additional options to override defaults
+         * @return \Generator A generator yielding response chunks
+         * @throws Exception
+         * @static 
+         */ 
+        public static function streamContent($prompt, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->streamContent($prompt, $options);
+        }
+                    /**
+         * Chat with the model using a conversation history
+         *
+         * @param array $messages Array of messages with 'role' (user/model) and 'content'
+         * @param array $options Additional options to override defaults
+         * @return array|null The response from the API
+         * @throws Exception
+         * @static 
+         */ 
+        public static function chat($messages, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->chat($messages, $options);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getChatResult($messages, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->getChatResult($messages, $options);
+        }
+                    /**
+         * Embed text using the Gemini embedding model
+         *
+         * @param string $text The text to embed
+         * @param array $options Additional options
+         * @return array|null The embedding vectors
+         * @throws Exception
+         * @static 
+         */ 
+        public static function embedContent($text, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->embedContent($text, $options);
+        }
+                    /**
+         * List available models
+         *
+         * @return array|null The available models
+         * @throws Exception
+         * @static 
+         */ 
+        public static function listModels()
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->listModels();
+        }
+                    /**
+         * Count tokens for a text prompt
+         *
+         * @param string $text The text to count tokens for
+         * @param array $options Additional options
+         * @return array|null The token count information
+         * @throws Exception
+         * @static 
+         */ 
+        public static function countTokens($text, $options = [])
+        {
+                        /** @var \App\Services\GeminiService $instance */
+                        return $instance->countTokens($text, $options);
+        }
+         
+    }
+     
+}
+
+    namespace Laravel\Socialite\Facades { 
+            /**
+     * 
+     *
+     * @method array getScopes()
+     * @method \Laravel\Socialite\Contracts\Provider scopes(array|string $scopes)
+     * @method \Laravel\Socialite\Contracts\Provider setScopes(array|string $scopes)
+     * @method \Laravel\Socialite\Contracts\Provider redirectUrl(string $url)
+     * @see \Laravel\Socialite\SocialiteManager
+     */ 
+        class Socialite {
+                    /**
+         * Get a driver instance.
+         *
+         * @param string $driver
+         * @return mixed 
+         * @static 
+         */ 
+        public static function with($driver)
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->with($driver);
+        }
+                    /**
+         * Build an OAuth 2 provider instance.
+         *
+         * @param string $provider
+         * @param array $config
+         * @return \Laravel\Socialite\Two\AbstractProvider 
+         * @static 
+         */ 
+        public static function buildProvider($provider, $config)
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->buildProvider($provider, $config);
+        }
+                    /**
+         * Format the server configuration.
+         *
+         * @param array $config
+         * @return array 
+         * @static 
+         */ 
+        public static function formatConfig($config)
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->formatConfig($config);
+        }
+                    /**
+         * Forget all of the resolved driver instances.
+         *
+         * @return \Laravel\Socialite\SocialiteManager 
+         * @static 
+         */ 
+        public static function forgetDrivers()
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->forgetDrivers();
+        }
+                    /**
+         * Set the container instance used by the manager.
+         *
+         * @param \Illuminate\Contracts\Container\Container $container
+         * @return \Laravel\Socialite\SocialiteManager 
+         * @static 
+         */ 
+        public static function setContainer($container)
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->setContainer($container);
+        }
+                    /**
+         * Get the default driver name.
+         *
+         * @return string 
+         * @throws \InvalidArgumentException
+         * @static 
+         */ 
+        public static function getDefaultDriver()
+        {
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->getDefaultDriver();
+        }
+                    /**
+         * Get a driver instance.
+         *
+         * @param string|null $driver
+         * @return mixed 
+         * @throws \InvalidArgumentException
+         * @static 
+         */ 
+        public static function driver($driver = null)
+        {            //Method inherited from \Illuminate\Support\Manager         
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->driver($driver);
+        }
+                    /**
+         * Register a custom driver creator Closure.
+         *
+         * @param string $driver
+         * @param \Closure $callback
+         * @return \Laravel\Socialite\SocialiteManager 
+         * @static 
+         */ 
+        public static function extend($driver, $callback)
+        {            //Method inherited from \Illuminate\Support\Manager         
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->extend($driver, $callback);
+        }
+                    /**
+         * Get all of the created "drivers".
+         *
+         * @return array 
+         * @static 
+         */ 
+        public static function getDrivers()
+        {            //Method inherited from \Illuminate\Support\Manager         
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->getDrivers();
+        }
+                    /**
+         * Get the container instance used by the manager.
+         *
+         * @return \Illuminate\Contracts\Container\Container 
+         * @static 
+         */ 
+        public static function getContainer()
+        {            //Method inherited from \Illuminate\Support\Manager         
+                        /** @var \Laravel\Socialite\SocialiteManager $instance */
+                        return $instance->getContainer();
+        }
+         
+    }
+     
+}
+
+    namespace Facade\Ignition\Facades { 
             /**
      * Class Flare.
      *
@@ -16097,6 +16360,16 @@
         {
                         /** @var \Facade\FlareClient\Flare $instance */
                         return $instance->filterExceptionsUsing($filterExceptionsCallable);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function filterReportsUsing($filterReportsCallable)
+        {
+                        /** @var \Facade\FlareClient\Flare $instance */
+                        return $instance->filterReportsUsing($filterReportsCallable);
         }
                     /**
          * 
@@ -16338,6 +16611,1247 @@
         {
                         /** @var \Facade\FlareClient\Flare $instance */
                         return $instance->group($groupName, $properties);
+        }
+         
+    }
+     
+}
+
+    namespace LINE\Laravel\Facade { 
+            /**
+     * 
+     *
+     */ 
+        class LINEBot {
+                    /**
+         * Get basic information about bot.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getBotInfo()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getBotInfo();
+        }
+                    /**
+         * Gets specified user's profile through API calling.
+         *
+         * @param string $userId The user ID to retrieve profile.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getProfile($userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getProfile($userId);
+        }
+                    /**
+         * Gets the list of User IDs of users who have added your LINE Official Account as a friend.
+         * 
+         * These users' IDs won't be included in the obtained list of user IDs:
+         * - Users who blocked the target LINE Official Account after adding it as a friend.
+         * - Users who haven't consented to their profile information being obtained.
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @param string|null $start continuationToken
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getFollowerIds($start = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getFollowerIds($start);
+        }
+                    /**
+         * Gets the list of User IDs of users who have added your LINE Official Account as a friend.
+         * 
+         * These users' IDs won't be included in the obtained list of user IDs:
+         * - Users who blocked the target LINE Official Account after adding it as a friend.
+         * - Users who haven't consented to their profile information being obtained.
+         * 
+         * This method gets all of followers by calling getFollowerIds() continually using token
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @return array userIds
+         * @see \LINE\LINEBot::getFollowerIds()
+         * @static 
+         */ 
+        public static function getAllFollowerIds()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAllFollowerIds();
+        }
+                    /**
+         * Gets message content which is associated with specified message ID.
+         *
+         * @param string $messageId The message ID to retrieve content.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getMessageContent($messageId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getMessageContent($messageId);
+        }
+                    /**
+         * Gets the target limit for additional messages in the current month.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfLimitForAdditional()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfLimitForAdditional();
+        }
+                    /**
+         * Gets the number of messages sent in the current month.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfSentThisMonth()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfSentThisMonth();
+        }
+                    /**
+         * Replies arbitrary message to destination which is associated with reply token.
+         *
+         * @param string $replyToken Identifier of destination.
+         * @param \LINE\LINEBot\MessageBuilder $messageBuilder Message builder to send.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function replyMessage($replyToken, $messageBuilder)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->replyMessage($replyToken, $messageBuilder);
+        }
+                    /**
+         * Replies text message(s) to destination which is associated with reply token.
+         * 
+         * This method receives variable texts. It can send text(s) message as bulk.
+         * 
+         * Exact signature of this method is <code>replyText(string $replyToken, string $text, string[] $extraTexts)</code>.
+         * 
+         * Means, this method can also receive multiple texts like so;
+         * 
+         * <code>
+         * $bot->replyText('reply-text', 'text', 'extra text1', 'extra text2', ...)
+         * </code>
+         *
+         * @param string $replyToken Identifier of destination.
+         * @param string $text Text of message.
+         * @param string[]|null $extraTexts Extra text of message.
+         * @return \Response 
+         * @throws \ReflectionException
+         * @static 
+         */ 
+        public static function replyText($replyToken, $text, $extraTexts = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->replyText($replyToken, $text, $extraTexts);
+        }
+                    /**
+         * Sends arbitrary message to destination.
+         *
+         * @param string $to Identifier of destination.
+         * @param \LINE\LINEBot\MessageBuilder $messageBuilder Message builder to send.
+         * @param boolean $notificationDisabled Don't send push notifications(=true) or send(=false)
+         * @param string|null $retryKey UUID(example: 123e4567-e89b-12d3-a456-426614174000) or Not needed retry(=null)
+         * @param array $customAggregationUnits Name of aggregation unit.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function pushMessage($to, $messageBuilder, $notificationDisabled = false, $retryKey = null, $customAggregationUnits = [])
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->pushMessage($to, $messageBuilder, $notificationDisabled, $retryKey, $customAggregationUnits);
+        }
+                    /**
+         * Sends arbitrary message to multi destinations.
+         *
+         * @param array $tos Identifiers of destination.
+         * @param \LINE\LINEBot\MessageBuilder $messageBuilder Message builder to send.
+         * @param boolean $notificationDisabled Don't send push notifications(=true) or send(=false)
+         * @param string|null $retryKey UUID(example: 123e4567-e89b-12d3-a456-426614174000) or Not needed retry(=null)
+         * @param array $customAggregationUnits Name of aggregation unit.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function multicast($tos, $messageBuilder, $notificationDisabled = false, $retryKey = null, $customAggregationUnits = [])
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->multicast($tos, $messageBuilder, $notificationDisabled, $retryKey, $customAggregationUnits);
+        }
+                    /**
+         * Sends push messages to multiple users at any time.
+         * 
+         * LINE@ accounts cannot call this API endpoint. Please migrate it to a LINE official account.
+         *
+         * @param \LINE\LINEBot\MessageBuilder $messageBuilder Message builder to send.
+         * @param boolean $notificationDisabled Don't send push notifications(=true) or send(=false)
+         * @param string|null $retryKey UUID(example: 123e4567-e89b-12d3-a456-426614174000) or Not needed retry(=null)
+         * @return \Response 
+         * @static 
+         */ 
+        public static function broadcast($messageBuilder, $notificationDisabled = false, $retryKey = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->broadcast($messageBuilder, $notificationDisabled, $retryKey);
+        }
+                    /**
+         * Leaves from group.
+         *
+         * @param string $groupId Identifier of group to leave.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function leaveGroup($groupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->leaveGroup($groupId);
+        }
+                    /**
+         * Leaves from room.
+         *
+         * @param string $roomId Identifier of room to leave.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function leaveRoom($roomId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->leaveRoom($roomId);
+        }
+                    /**
+         * Parse event request to Event objects.
+         *
+         * @param string $body Request body.
+         * @param string $signature Signature of request.
+         * @param bool $eventOnly if this flag on, get events only.
+         * @return mixed 
+         * @throws LINEBot\Exception\InvalidEventRequestException
+         * @throws LINEBot\Exception\InvalidSignatureException
+         * @static 
+         */ 
+        public static function parseEventRequest($body, $signature, $eventOnly = true)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->parseEventRequest($body, $signature, $eventOnly);
+        }
+                    /**
+         * Validate request with signature.
+         *
+         * @param string $body Request body.
+         * @param string $signature Signature of request.
+         * @return bool Request is valid or not.
+         * @throws LINEBot\Exception\InvalidSignatureException
+         * @static 
+         */ 
+        public static function validateSignature($body, $signature)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->validateSignature($body, $signature);
+        }
+                    /**
+         * Gets the user profile of a member of a group that the bot is in.
+         * 
+         * This can be the user ID of a user who has not added the bot as a friend or has blocked the bot.
+         *
+         * @param string $groupId Identifier of the group
+         * @param string $userId Identifier of the user
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getGroupMemberProfile($groupId, $userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getGroupMemberProfile($groupId, $userId);
+        }
+                    /**
+         * Gets the user profile of a member of a room that the bot is in.
+         * 
+         * This can be the user ID of a user who has not added the bot as a friend or has blocked the bot.
+         *
+         * @param string $roomId Identifier of the room
+         * @param string $userId Identifier of the user
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRoomMemberProfile($roomId, $userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRoomMemberProfile($roomId, $userId);
+        }
+                    /**
+         * Gets the user IDs of the members of a group that the bot is in.
+         * 
+         * This includes the user IDs of users who have not added the bot as a friend or has blocked the bot.
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @param string $groupId Identifier of the group
+         * @param string|null $start continuationToken
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getGroupMemberIds($groupId, $start = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getGroupMemberIds($groupId, $start);
+        }
+                    /**
+         * Gets the user IDs of the members of a room that the bot is in.
+         * 
+         * This includes the user IDs of users who have not added the bot as a friend or has blocked the bot.
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @param string $roomId Identifier of the room
+         * @param string|null $start continuationToken
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRoomMemberIds($roomId, $start = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRoomMemberIds($roomId, $start);
+        }
+                    /**
+         * Gets the user IDs of the members of a group that the bot is in.
+         * 
+         * This includes the user IDs of users who have not added the bot as a friend or has blocked the bot.
+         * This method gets all of the members by calling getGroupMemberIds() continually using token
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @param string $groupId Identifier of the group
+         * @return array memberIds
+         * @see \LINE\LINEBot::getGroupMemberIds()
+         * @static 
+         */ 
+        public static function getAllGroupMemberIds($groupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAllGroupMemberIds($groupId);
+        }
+                    /**
+         * Gets the user IDs of the members of a room that the bot is in.
+         * 
+         * This includes the user IDs of users who have not added the bot as a friend or has blocked the bot.
+         * This method gets all of the members by calling getRoomMemberIds() continually using token
+         * 
+         * This feature is only available for LINE@ Approved accounts or official accounts.
+         *
+         * @param string $roomId Identifier of the room
+         * @return array memberIds
+         * @see \LINE\LINEBot::getRoomMemberIds()
+         * @static 
+         */ 
+        public static function getAllRoomMemberIds($roomId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAllRoomMemberIds($roomId);
+        }
+                    /**
+         * Get group summary
+         * 
+         * Gets the group ID, group name, and group icon URL of a group where the LINE Official Account is a member.
+         *
+         * @param string $groupId Group ID
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getGroupSummary($groupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getGroupSummary($groupId);
+        }
+                    /**
+         * Gets the count of members in a group
+         * 
+         * The number returned excludes the LINE Official Account.
+         *
+         * @param string $groupId Group ID
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getGroupMembersCount($groupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getGroupMembersCount($groupId);
+        }
+                    /**
+         * Gets the count of members in a room
+         * 
+         * The number returned excludes the LINE Official Account.
+         *
+         * @param string $roomId Room ID
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRoomMembersCount($roomId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRoomMembersCount($roomId);
+        }
+                    /**
+         * Issues a link token used for the account link feature.
+         *
+         * @param string $userId User ID for the LINE account to be linked.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createLinkToken($userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createLinkToken($userId);
+        }
+                    /**
+         * Gets a rich menu via a rich menu ID.
+         *
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRichMenu($richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRichMenu($richMenuId);
+        }
+                    /**
+         * Creates a rich menu.
+         * 
+         * You must upload a rich menu image and link the rich menu to a user for the rich menu to be displayed.
+         *
+         * @param \LINE\LINEBot\RichMenuBuilder $richMenuBuilder
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createRichMenu($richMenuBuilder)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createRichMenu($richMenuBuilder);
+        }
+                    /**
+         * Deletes a rich menu.
+         *
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function deleteRichMenu($richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->deleteRichMenu($richMenuId);
+        }
+                    /**
+         * Set the default rich menu.
+         *
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function setDefaultRichMenuId($richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->setDefaultRichMenuId($richMenuId);
+        }
+                    /**
+         * Get the default rich menu ID.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getDefaultRichMenuId()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getDefaultRichMenuId();
+        }
+                    /**
+         * Cancel the default rich menu.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function cancelDefaultRichMenuId()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->cancelDefaultRichMenuId();
+        }
+                    /**
+         * Gets the ID of the rich menu linked to a user.
+         *
+         * @param string $userId User ID. Found in the source object of webhook event objects.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRichMenuId($userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRichMenuId($userId);
+        }
+                    /**
+         * Links a rich menu to a user. Only one rich menu can be linked to a user at one time.
+         *
+         * @param string $userId User ID. Found in the source object of webhook event objects.
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function linkRichMenu($userId, $richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->linkRichMenu($userId, $richMenuId);
+        }
+                    /**
+         * Links a rich menu to multiple users.
+         *
+         * @param string[] $userIds Found in the source object of webhook event objects. Max: 150 user IDs.
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function bulkLinkRichMenu($userIds, $richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->bulkLinkRichMenu($userIds, $richMenuId);
+        }
+                    /**
+         * Unlinks a rich menu from multiple user.
+         *
+         * @param string $userId User ID. Found in the source object of webhook event objects.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function unlinkRichMenu($userId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->unlinkRichMenu($userId);
+        }
+                    /**
+         * Unlinks rich menus from multiple users.
+         *
+         * @param string[] $userIds Found in the source object of webhook event objects. Max: 150 user IDs.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function bulkUnlinkRichMenu($userIds)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->bulkUnlinkRichMenu($userIds);
+        }
+                    /**
+         * Downloads an image associated with a rich menu.
+         *
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @return \Response 
+         * @static 
+         */ 
+        public static function downloadRichMenuImage($richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->downloadRichMenuImage($richMenuId);
+        }
+                    /**
+         * Uploads and attaches an image to a rich menu.
+         * 
+         * Notes:
+         * <ul><li>Images must have one of the following resolutions: 2500x1686 or 2500x843 pixels.</li>
+         * <li>You cannot replace an image attached to a rich menu. To update your rich menu image,
+         * create a new rich menu object and upload another image.</li></ul>
+         *
+         * @param string $richMenuId ID of an uploaded rich menu
+         * @param string $imagePath Path to the image
+         * @param string $contentType image/jpeg or image/png
+         * @return \Response 
+         * @static 
+         */ 
+        public static function uploadRichMenuImage($richMenuId, $imagePath, $contentType)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->uploadRichMenuImage($richMenuId, $imagePath, $contentType);
+        }
+                    /**
+         * Gets a list of all uploaded rich menus.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRichMenuList()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRichMenuList();
+        }
+                    /**
+         * Create rich menu alias
+         *
+         * @param string $richMenuAliasId Rich menu alias ID, which can be any ID, unique for each channel.
+         * @param string $richMenuId The rich menu ID to be associated with the rich menu alias.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createRichMenuAlias($richMenuAliasId, $richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createRichMenuAlias($richMenuAliasId, $richMenuId);
+        }
+                    /**
+         * Delete rich menu alias
+         *
+         * @param string $richMenuAliasId The rich menu alias ID whose information you want to obtain.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function deleteRichMenuAlias($richMenuAliasId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->deleteRichMenuAlias($richMenuAliasId);
+        }
+                    /**
+         * Update rich menu alias
+         *
+         * @param string $richMenuAliasId The rich menu alias ID whose information you want to obtain.
+         * @param string $richMenuId The rich menu ID to be associated with the rich menu alias.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function updateRichMenuAlias($richMenuAliasId, $richMenuId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->updateRichMenuAlias($richMenuAliasId, $richMenuId);
+        }
+                    /**
+         * Get rich menu alias information
+         *
+         * @param string $richMenuAliasId The rich menu alias ID whose information you want to obtain.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRichMenuAlias($richMenuAliasId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRichMenuAlias($richMenuAliasId);
+        }
+                    /**
+         * Get list of rich menu alias
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getRichMenuAliasList()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getRichMenuAliasList();
+        }
+                    /**
+         * Get number of sent reply messages
+         *
+         * @param \DateTime $datetime Date the messages were sent.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfSentReplyMessages($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfSentReplyMessages($datetime);
+        }
+                    /**
+         * Get number of sent push messages
+         *
+         * @param \DateTime $datetime Date the messages were sent.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfSentPushMessages($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfSentPushMessages($datetime);
+        }
+                    /**
+         * Get number of sent multicast messages
+         *
+         * @param \DateTime $datetime Date the messages were sent.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfSentMulticastMessages($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfSentMulticastMessages($datetime);
+        }
+                    /**
+         * Get number of sent broadcast messages
+         *
+         * @param \DateTime $datetime Date the messages were sent.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfSentBroadcastMessages($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfSentBroadcastMessages($datetime);
+        }
+                    /**
+         * Get number of message deliveries
+         *
+         * @param \DateTime $datetime Date for which to retrieve number of sent messages.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfMessageDeliveries($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfMessageDeliveries($datetime);
+        }
+                    /**
+         * Get number of followers
+         *
+         * @param \DateTime $datetime Date for which to retrieve the number of followers.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfFollowers($datetime)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfFollowers($datetime);
+        }
+                    /**
+         * Get friend demographics
+         * 
+         * It can take up to 3 days for demographic information to be calculated.
+         * This means the information the API returns may be 3 days old.
+         * Furthermore, your Target reach number must be at least 20 to retrieve demographic information.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getFriendDemographics()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getFriendDemographics();
+        }
+                    /**
+         * Get user interaction statistics
+         * 
+         * Returns statistics about how users interact with broadcast messages sent from your LINE official account.
+         * Interactions are tracked for only 14 days after a message was sent.
+         * The statistics are no longer updated after 15 days.
+         *
+         * @param string $requestId Request ID of broadcast message.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getUserInteractionStatistics($requestId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getUserInteractionStatistics($requestId);
+        }
+                    /**
+         * Create channel access token
+         * 
+         * Create a short-lived channel access token.
+         * Up to 30 tokens can be issued.
+         * If the maximum is exceeded,
+         * existing channel access tokens are revoked in the order of when they were first issued.
+         *
+         * @param string $channelId
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createChannelAccessToken($channelId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createChannelAccessToken($channelId);
+        }
+                    /**
+         * Revoke channel access token
+         * 
+         * Revokes a channel access token.
+         *
+         * @param string $channelAccessToken
+         * @return \Response 
+         * @static 
+         */ 
+        public static function revokeChannelAccessToken($channelAccessToken)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->revokeChannelAccessToken($channelAccessToken);
+        }
+                    /**
+         * Create channel access token v2.1
+         * 
+         * You can issue up to 30 tokens.
+         * If you reach the maximum limit, additional requests of issuing channel access tokens are blocked.
+         *
+         * @see https://developers.line.biz/en/docs/messaging-api/generate-json-web-token/#generate_jwt
+         * @param string $jwt
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createChannelAccessToken21($jwt)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createChannelAccessToken21($jwt);
+        }
+                    /**
+         * Revoke channel access token v2.1
+         *
+         * @param string $channelId
+         * @param string $channelSecret
+         * @param string $channelAccessToken
+         * @return \Response 
+         * @static 
+         */ 
+        public static function revokeChannelAccessToken21($channelId, $channelSecret, $channelAccessToken)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->revokeChannelAccessToken21($channelId, $channelSecret, $channelAccessToken);
+        }
+                    /**
+         * Get all valid channel access token key IDs v2.1
+         *
+         * @param string $jwt
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getChannelAccessToken21Keys($jwt)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getChannelAccessToken21Keys($jwt);
+        }
+                    /**
+         * Send Narrowcast message.
+         *
+         * @param \LINE\LINEBot\MessageBuilder $messageBuilder
+         * @param \LINE\LINEBot\Narrowcast\Recipient\RecipientBuilder|null $recipientBuilder
+         * @param \LINE\LINEBot\Narrowcast\DemographicFilter\DemographicFilterBuilder|null $demographicFilterBuilder
+         * @param int|null $max
+         * @param string|null $retryKey UUID(example: 123e4567-e89b-12d3-a456-426614174000) or Not needed retry(=null)
+         * @return \Response 
+         * @static 
+         */ 
+        public static function sendNarrowcast($messageBuilder, $recipientBuilder = null, $demographicFilterBuilder = null, $max = null, $retryKey = null, $upToRemainingQuota = false)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->sendNarrowcast($messageBuilder, $recipientBuilder, $demographicFilterBuilder, $max, $retryKey, $upToRemainingQuota);
+        }
+                    /**
+         * Get Narrowcast message sending progress.
+         *
+         * @param string $requestId
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNarrowcastProgress($requestId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNarrowcastProgress($requestId);
+        }
+                    /**
+         * Create audience for uploading user IDs
+         *
+         * @param string $description The audience's name. Max character limit: 120
+         * @param array $audiences An array of up to 10,000 user IDs or IFAs.
+         * @param bool $isIfaAudience If this is false (default), recipients are specified by user IDs.
+         * @param string|null $uploadDescription The description to register with the job.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createAudienceGroupForUploadingUserIds($description, $audiences = [], $isIfaAudience = false, $uploadDescription = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createAudienceGroupForUploadingUserIds($description, $audiences, $isIfaAudience, $uploadDescription);
+        }
+                    /**
+         * Create audience for uploading user IDs (by file)
+         *
+         * @param string $description The audience's name. Max character limit: 120
+         * @param string $filePath A text file path with one user ID or IFA entered per line. Max number: 1,500,000
+         * @param bool $isIfaAudience If this is false (default), recipients are specified by user IDs.
+         * @param string|null $uploadDescription The description to register with the job.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createAudienceGroupForUploadingUserIdsByFile($description, $filePath, $isIfaAudience = false, $uploadDescription = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createAudienceGroupForUploadingUserIdsByFile($description, $filePath, $isIfaAudience, $uploadDescription);
+        }
+                    /**
+         * Add user IDs or Identifiers for Advertisers (IFAs) to an audience for uploading user IDs
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @param array $audiences An array of up to 10,000 user IDs or IFAs.
+         * @param string|null $uploadDescription The description to register with the job.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function updateAudienceGroupForUploadingUserIds($audienceGroupId, $audiences, $uploadDescription = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->updateAudienceGroupForUploadingUserIds($audienceGroupId, $audiences, $uploadDescription);
+        }
+                    /**
+         * Add user IDs or Identifiers for Advertisers (IFAs) to an audience for uploading user IDs (by file)
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @param string $filePath A text file path with one user ID or IFA entered per line. Max number: 1,500,000
+         * @param string|null $uploadDescription The description to register with the job.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function updateAudienceGroupForUploadingUserIdsByFile($audienceGroupId, $filePath, $uploadDescription = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->updateAudienceGroupForUploadingUserIdsByFile($audienceGroupId, $filePath, $uploadDescription);
+        }
+                    /**
+         * Create audience for click-based retargeting
+         *
+         * @param string $description The audience's name. Max character limit: 120
+         * @param string $requestId The request ID of a broadcast or narrowcast message sent in the past 60 days.
+         * @param string|null $clickUrl The URL clicked by the user. Max character limit: 2,000
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createAudienceGroupForClick($description, $requestId, $clickUrl = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createAudienceGroupForClick($description, $requestId, $clickUrl);
+        }
+                    /**
+         * Create audience for impression-based retargeting
+         *
+         * @param string $description The audience's name. Max character limit: 120
+         * @param string $requestId The request ID of a broadcast or narrowcast message sent in the past 60 days.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function createAudienceGroupForImpression($description, $requestId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->createAudienceGroupForImpression($description, $requestId);
+        }
+                    /**
+         * Rename an audience
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @param string $description The audience's name. Max character limit: 120
+         * @return \Response 
+         * @static 
+         */ 
+        public static function renameAudience($audienceGroupId, $description)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->renameAudience($audienceGroupId, $description);
+        }
+                    /**
+         * Delete audience
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function deleteAudience($audienceGroupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->deleteAudience($audienceGroupId);
+        }
+                    /**
+         * Get audience
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getAudience($audienceGroupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAudience($audienceGroupId);
+        }
+                    /**
+         * Get data for multiple audiences
+         *
+         * @param int $page The page to return when getting (paginated) results. Must be 1 or higher.
+         * @param int $size The number of audiences per page. Max: 40
+         * @param string|null $description You can search for partial matches.
+         * @param string|null $status One of: IN_PROGRESS, READY, FAILED, EXPIRED
+         * @param boolean|null $includesExternalPublicGroups
+         * @param string|null $createRoute How the audience was created. One of: OA_MANAGER, MESSAGING_API
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getAudiences($page, $size = 20, $description = null, $status = null, $includesExternalPublicGroups = null, $createRoute = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAudiences($page, $size, $description, $status, $includesExternalPublicGroups, $createRoute);
+        }
+                    /**
+         * Get the authority level of the audience
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getAuthorityLevel()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAuthorityLevel();
+        }
+                    /**
+         * Change the authority level of the audience
+         *
+         * @param string $authorityLevel One of: PUBLIC, PRIVATE
+         * @return \Response 
+         * @static 
+         */ 
+        public static function updateAuthorityLevel($authorityLevel)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->updateAuthorityLevel($authorityLevel);
+        }
+                    /**
+         * Activate the audience
+         *
+         * @param int $audienceGroupId The audience ID.
+         * @return \Response 
+         * @static 
+         */ 
+        public static function activateAudience($audienceGroupId)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->activateAudience($audienceGroupId);
+        }
+                    /**
+         * Get webhook endpoint information
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getWebhookEndpointInfo()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getWebhookEndpointInfo();
+        }
+                    /**
+         * Set webhook endpoint URL
+         *
+         * @param string $endpoint
+         * @return \Response 
+         * @static 
+         */ 
+        public static function setWebhookEndpoint($endpoint)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->setWebhookEndpoint($endpoint);
+        }
+                    /**
+         * Checks if the configured webhook endpoint can receive a test webhook event
+         *
+         * @param string $endpoint
+         * @return \Response 
+         * @static 
+         */ 
+        public static function testWebhookEndpoint($endpoint)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->testWebhookEndpoint($endpoint);
+        }
+                    /**
+         * Get the per-unit statistics of how users interact
+         * with push messages and multicast messages
+         * sent from your LINE Official Account.
+         *
+         * @param string $customAggregationUnit Name of aggregation unit
+         * @param string $from Start date of aggregation period
+         * @param string $to End date of aggregation period
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getUserInteractionStatisticsPerUnit($customAggregationUnit, $from, $to)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getUserInteractionStatisticsPerUnit($customAggregationUnit, $from, $to);
+        }
+                    /**
+         * Get the number of aggregation units used this month.
+         *
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNumberOfUnitsUsedThisMonth()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNumberOfUnitsUsedThisMonth();
+        }
+                    /**
+         * Get the name list of units used this month for statistics aggregation.
+         *
+         * @param string|null $limit
+         * @param int|null $start
+         * @return \Response 
+         * @static 
+         */ 
+        public static function getNameListOfUnitsUsedThisMonth($limit = null, $start = null)
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getNameListOfUnitsUsedThisMonth($limit, $start);
+        }
+                    /**
+         * Get the name list of units used this month for statistics aggregation.
+         * 
+         * This method gets all of the names
+         * by calling getNameListOfUnitsUsedThisMonth() continually using token
+         *
+         * @return array 
+         * @static 
+         */ 
+        public static function getAllNameListOfUnitsUsedThisMonth()
+        {
+                        /** @var \LINE\LINEBot $instance */
+                        return $instance->getAllNameListOfUnitsUsedThisMonth();
+        }
+         
+    }
+     
+}
+
+    namespace Phattarachai\LineNotify\Facade { 
+            /**
+     * 
+     *
+     */ 
+        class Line {
+                    /**
+         * Set token Line notify that want to send message
+         *
+         * @param string $token the token of Line notify
+         * @static 
+         */ 
+        public static function setToken($token)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->setToken($token);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function thumbnailUrl($url)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->thumbnailUrl($url);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function imageUrl($url)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->imageUrl($url);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function imagePath($path)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->imagePath($path);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function sticker($sticker_package_id, $sticker_id)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->sticker($sticker_package_id, $sticker_id);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function disableNotification()
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->disableNotification();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function enableNotification()
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->enableNotification();
+        }
+                    /**
+         * Send Line text message.
+         *
+         * @param string $message text message on Line notify can not be empty
+         * @return boolean success or fail on send Line notify message
+         * @throws GuzzleException|\JsonException
+         * @static 
+         */ 
+        public static function send($message)
+        {
+                        /** @var \Phattarachai\LineNotify\Line $instance */
+                        return $instance->send($message);
+        }
+         
+    }
+     
+}
+
+    namespace Spatie\SignalAwareCommand\Facades { 
+            /**
+     * 
+     *
+     * @see \Spatie\SignalAwareCommand\Signal
+     */ 
+        class Signal {
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function handle($signal, $callable)
+        {
+                        /** @var \Spatie\SignalAwareCommand\Signal $instance */
+                        return $instance->handle($signal, $callable);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function executeSignalHandlers($signal, $command)
+        {
+                        /** @var \Spatie\SignalAwareCommand\Signal $instance */
+                        return $instance->executeSignalHandlers($signal, $command);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function clearHandlers($signal = null)
+        {
+                        /** @var \Spatie\SignalAwareCommand\Signal $instance */
+                        return $instance->clearHandlers($signal);
         }
          
     }
@@ -19781,7 +21295,7 @@ namespace  {
                 /**
              * Die and dump the current SQL and bindings.
              *
-             * @return \Illuminate\Database\Query\never 
+             * @return never 
              * @static 
              */ 
             public static function dd()
@@ -19858,6 +21372,7 @@ namespace  {
             class Event extends \Illuminate\Support\Facades\Event {}
             class File extends \Illuminate\Support\Facades\File {}
             class Gate extends \Illuminate\Support\Facades\Gate {}
+            class Gemini extends \App\Facades\Gemini {}
             class Hash extends \Illuminate\Support\Facades\Hash {}
             class Http extends \Illuminate\Support\Facades\Http {}
             class Js extends \Illuminate\Support\Js {}
@@ -19874,12 +21389,16 @@ namespace  {
             class Route extends \Illuminate\Support\Facades\Route {}
             class Schema extends \Illuminate\Support\Facades\Schema {}
             class Session extends \Illuminate\Support\Facades\Session {}
+            class Socialite extends \Laravel\Socialite\Facades\Socialite {}
             class Storage extends \Illuminate\Support\Facades\Storage {}
             class Str extends \Illuminate\Support\Str {}
             class URL extends \Illuminate\Support\Facades\URL {}
             class Validator extends \Illuminate\Support\Facades\Validator {}
             class View extends \Illuminate\Support\Facades\View {}
             class Flare extends \Facade\Ignition\Facades\Flare {}
+            class LINEBot extends \LINE\Laravel\Facade\LINEBot {}
+            class Line extends \Phattarachai\LineNotify\Facade\Line {}
+            class Signal extends \Spatie\SignalAwareCommand\Facades\Signal {}
      
 }
 
