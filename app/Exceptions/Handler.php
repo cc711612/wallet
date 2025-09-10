@@ -62,7 +62,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         if ($request->is('api/*')) {
-            Log::error($e->getMessage());
+            Log::error($e->getMessage(), ['exception' => $e]);
             if (
                 $e instanceof SignatureInvalidException ||
                 $e instanceof \Firebase\JWT\ExpiredException  ||
