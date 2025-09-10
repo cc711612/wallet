@@ -7,6 +7,7 @@ services:
         container_name: ${PROJECT_NAME}-php-fpm
         links:
             - "redis"
+            - "mysql"
         environment:
             - TZ=Asia/Taipei
         volumes:
@@ -38,3 +39,15 @@ services:
         container_name: ${PROJECT_NAME}-redis
         environment:
             - TZ=Asia/Taipei
+    mysql:
+        image: mysql:8.0
+        restart: always
+        container_name: ${PROJECT_NAME}-mysql
+        environment:
+            MYSQL_DATABASE: wallet
+            MYSQL_ROOT_PASSWORD: 1qaz@WSX
+            TZ: Asia/Taipei
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./mysql/data:/var/lib/mysql
