@@ -36,16 +36,19 @@ class WalletUpdateRequest extends Request
      */
     protected function map($row): array
     {
-        return [
+        $appends = [];
+        if (Arr::get($row, 'mode')) {
+            $appends['wallets.mode'] = Arr::get($row, 'mode');
+        }
+        return array_merge($appends, [
             'users.id'        => Arr::get($row, 'user.id'),
             'wallets.id'      => Arr::get($row, 'wallet'),
             'wallets.user_id' => Arr::get($row, 'user.id'),
             'wallets.title'   => Arr::get($row, 'title'),
-            'wallets.mode'    => Arr::get($row, 'mode'),
             'wallets.unit'    => Arr::get($row, 'unit'),
             'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
             'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),
             'wallets.status'  => Arr::get($row, 'status'),
-        ];
+        ]);
     }
 }

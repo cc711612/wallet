@@ -42,13 +42,16 @@ class WalletStoreRequest extends Request
      */
     protected function map($row): array
     {
-        return [
+        $appends = [];
+        if (Arr::get($row, 'mode')) {
+            $appends['wallets.mode'] = Arr::get($row, 'mode');
+        }
+        return array_merge($appends, [
             'users.id'              => Arr::get($row, 'user.id'),
             'wallets.user_id'       => Arr::get($row, 'user.id'),
             'wallets.code'          => Str::random(8),
             'wallets.title'         => Arr::get($row, 'title'),
             'wallets.unit'          => Arr::get($row, 'unit'),
-            'wallets.mode'          => Arr::get($row, 'mode'),
             'wallets.properties.unitConfigurable' => Arr::get($row, 'unitConfigurable'),
             'wallets.properties.decimalPlaces' => Arr::get($row, 'decimalPlaces'),
             'wallets.status'        => 1,
