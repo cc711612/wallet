@@ -59,6 +59,6 @@ class WalletStoreRequest extends Request
             'wallet_users.token'    => Arr::get($row, 'user.token'),
             'wallet_users.user_id'  => Arr::get($row, 'user.id'),
             'wallet_users.is_admin' => 1,
-        ];
+        ]);
     }
 }
