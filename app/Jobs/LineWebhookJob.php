@@ -231,63 +231,99 @@ class LineWebhookJob implements ShouldQueue
      */
     private function generateAddWalletMessage($userMessage, $replyToken, $wallet, $userId)
     {
-        $messages = [];
         $categories = CategoryEntity::select(['id', 'name'])->get();
-        $messages[] = '以下是帳本的 category，請幫我分析後續的內容分別為哪個分類，格式為: categoryId=${categoryId}, amount=${amount}, title=${title}。如果遇到分析難度過高，例如是食物，請根據現在時間判斷是否為早午晚餐。 現在時間為：' . now()->format('Y-m-d H:i:s') . '。';
-        $messages[] = '分類資料: ' . $categories->map(fn($cat) => "id={$cat->id}, name={$cat->name}")->implode('; ');
-        $messages[] = $userMessage;
+        $categoryList = $categories->map(fn($cat) => "id={$cat->id}, name={$cat->name}")->implode('; ');
 
-        $messages = array_map(function ($message) {
-            return [
-                'role' => 'user',
-                'content' => $message
-            ];
-        }, $messages);
+        // 將系統指令與使用者輸入合併為單一 user 訊息，避免 multi-turn 角色順序問題
+        $prompt = implode("\n", [
+            '你是一個記帳分析助手，請嚴格依照格式回傳，不要有任何多餘說明。',
+            '現在時間：' . now()->format('Y-m-d H:i:s'),
+            '可用分類（請從中選擇最接近的一項）：' . $categoryList,
+            '請分析以下內容，回傳純 JSON 格式（不要用 markdown code block）：',
+            '{"categoryId": <數字>, "amount": <整數>, "title": "<名稱>"}',
+            '使用者輸入：' . $userMessage,
+        ]);
+
+        $messages = [
+            ['role' => 'user', 'content' => $prompt],
+        ];
 
         $geminiService = app(GeminiService::class);
-        $response = $geminiService->getChatResult($messages);
-        // 清理回應內容，確保格式正確
-        $cleanResponse = trim(str_replace(['`'], '', $response));
+
+        try {
+            $response = $geminiService->getChatResult($messages);
+        } catch (\Exception $e) {
+            Log::channel('bot')->error('GeminiService 呼叫失敗: ' . $e->getMessage());
+            $this->sentMessage($replyToken, new TextMessageBuilder('AI 服務暫時無法使用，請稍後再試'));
+            return;
+        }
+
+        // 清理回應：移除 markdown code block 標記與多餘空白
+        $cleanResponse = trim(preg_replace('/```(?:json)?|```/', '', $response));
+
         if (empty($cleanResponse)) {
             Log::channel('bot')->error('GeminiService 回應為空');
+            $this->sentMessage($replyToken, new TextMessageBuilder('AI 無回應，請稍後再試'));
             return;
         }
-        // categoryId=2, amount=100, title=熊貓外送
-        // 這裡可以使用正則表達式來解析回應
-        // 例如：categoryId=2, amount=100, title=熊貓外送
-        // 這裡假設回應格式為 "categoryId=2, amount=100, title=熊貓外送"
-        // 使用正則表達式來解析回應
-        preg_match('/categoryId=(\d+), amount=(\d+), title=([^,]+)/', $cleanResponse, $matches);
-        if (count($matches) < 4) {
-            Log::channel('bot')->error('無法解析回應: ' . $cleanResponse);
-            $this->sentMessage($replyToken, new TextMessageBuilder('無法解析回應，請檢查格式'));
+
+        // 優先嘗試 JSON 解析
+        $parsed = json_decode($cleanResponse, true);
+
+        // 若 JSON 解析失敗，再 fallback 到 Regex（容錯空格與小數金額）
+        if (json_last_error() !== JSON_ERROR_NONE || empty($parsed)) {
+            Log::channel('bot')->warning('JSON 解析失敗，嘗試 Regex fallback', ['response' => $cleanResponse]);
+            if (preg_match('/categoryId\s*=\s*(\d+)[,\s]+amount\s*=\s*([\d.]+)[,\s]+title\s*=\s*(.+)/i', $cleanResponse, $matches)) {
+                $parsed = [
+                    'categoryId' => (int) $matches[1],
+                    'amount'     => (int) round((float) $matches[2]),
+                    'title'      => trim($matches[3]),
+                ];
+            } else {
+                Log::channel('bot')->error('無法解析 Gemini 回應: ' . $cleanResponse);
+                $this->sentMessage($replyToken, new TextMessageBuilder('無法解析 AI 回應，請嘗試更明確的描述，例如「午餐 120」'));
+                return;
+            }
+        }
+
+        $categoryId = (int) ($parsed['categoryId'] ?? 0);
+        $amount     = (int) round((float) ($parsed['amount'] ?? 0));
+        $title      = trim($parsed['title'] ?? '');
+
+        // 驗證必要欄位
+        if ($categoryId <= 0 || $amount <= 0 || empty($title)) {
+            Log::channel('bot')->error('Gemini 回傳欄位不完整', ['parsed' => $parsed]);
+            $this->sentMessage($replyToken, new TextMessageBuilder('解析結果不完整，請重新輸入'));
             return;
         }
-        $categoryId = $matches[1];
-        $amount = $matches[2];
-        $title = $matches[3];
-        $category = $categories->where('id', $categoryId)->first();
+
+        $category     = $categories->where('id', $categoryId)->first();
         $categoryName = $category ? $category->name : '未知分類';
-        $jsonData['categoryName'] = $categoryName;
-        $jsonData['amount'] = $amount;
-        $jsonData['title'] = $title;
-        $jsonData['categoryId'] = $categoryId;
-        // queue create wallet detail
+
+        $jsonData = [
+            'categoryId'   => $categoryId,
+            'categoryName' => $categoryName,
+            'amount'       => $amount,
+            'title'        => $title,
+        ];
+
+        // 確認解析正確後才派發 Job
         CreateWalletDetailJob::dispatch($userId, $wallet->id, $jsonData);
-        // 回傳欄位的資料 根據 \n 來換行
-        $columns = [];
-        $actions = array(
-            new MessageTemplateActionBuilder("完全正確", "完全正確 :" . $jsonData['title']),
-            new MessageTemplateActionBuilder("錯誤資訊", "錯誤資訊 :" . $jsonData['title']),
-        );
-        $message = '已根據內容分析出來的分類: ' . "\n";
-        foreach ($jsonData as $key => $value) {
-            $message .= $key . ': ' . $value . "\n";
-        }
 
-        $columns[] = new ConfirmTemplateBuilder($message, $actions);
+        // 回傳確認訊息
+        $message = "已分析出以下記帳資料：\n"
+            . "分類：{$categoryName}\n"
+            . "金額：{$amount}\n"
+            . "名稱：{$title}\n"
+            . "請確認是否正確？";
 
-        $carousel = new CarouselTemplateBuilder($columns);
+        $actions = [
+            new MessageTemplateActionBuilder("完全正確", "完全正確 :" . $title),
+            new MessageTemplateActionBuilder("錯誤資訊", "錯誤資訊 :" . $title),
+        ];
+
+        $columns   = [new ConfirmTemplateBuilder($message, $actions)];
+        $carousel  = new CarouselTemplateBuilder($columns);
         $textMessageBuilder = new TemplateMessageBuilder("請在手機中查看此訊息", $carousel);
 
         $this->sentMessage($replyToken, $textMessageBuilder);
